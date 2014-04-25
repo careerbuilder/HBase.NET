@@ -46,7 +46,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="Thrift">
-      <HintPath>dll\Thrift.dll</HintPath>
+      <HintPath>..\dll\Thrift.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

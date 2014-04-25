@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3E56857E-F6BD-4042-ADA3-1B985747233B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hbase</RootNamespace>
+    <AssemblyName>HBase.NET</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core">
+      <HintPath>dll\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>dll\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Thrift">
+      <HintPath>dll\Thrift.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AtomicIncrement.cs" />
+    <Compile Include="ConnectionTimeoutManager.cs" />
+    <Compile Include="EqualityComparibleByteArray.cs" />
+    <Compile Include="gen-csharp\Hbase\AlreadyExists.cs" />
+    <Compile Include="gen-csharp\Hbase\BatchMutation.cs" />
+    <Compile Include="gen-csharp\Hbase\ColumnDescriptor.cs" />
+    <Compile Include="gen-csharp\Hbase\Hbase.cs" />
+    <Compile Include="gen-csharp\Hbase\IllegalArgument.cs" />
+    <Compile Include="gen-csharp\Hbase\IOError.cs" />
+    <Compile Include="gen-csharp\Hbase\Mutation.cs" />
+    <Compile Include="gen-csharp\Hbase\TCell.cs" />
+    <Compile Include="gen-csharp\Hbase\TIncrement.cs" />
+    <Compile Include="gen-csharp\Hbase\TRegionInfo.cs" />
+    <Compile Include="gen-csharp\Hbase\TRowResult.cs" />
+    <Compile Include="gen-csharp\Hbase\TScan.cs" />
+    <Compile Include="HBaseCellInfo.cs" />
+    <Compile Include="HBaseClassCell.cs" />
+    <Compile Include="HBaseHost.cs" />
+    <Compile Include="HBaseIndexOptimizationLookup.cs" />
+    <Compile Include="HBaseStructureCell.cs" />
+    <Compile Include="HBaseCell.cs" />
+    <Compile Include="Iterators\IIterator.cs" />
+    <Compile Include="Iterators\RoundRobin\RoundRobinIterator.cs" />
+    <Compile Include="RetryExceededException.cs" />
+    <Compile Include="SerializableHBaseException.cs" />
+    <Compile Include="Static Internals\ClientEncoder.cs" />
+    <Compile Include="Static Internals\ClientReflector.cs" />
+    <Compile Include="ClientSynchronizationEvent.cs" />
+    <Compile Include="Static Internals\ClientTimeSeriesGenerator.cs" />
+    <Compile Include="HBaseConnection.cs" />
+    <Compile Include="CompressionType.cs" />
+    <Compile Include="HBaseDeletion.cs" />
+    <Compile Include="Static Internals\ClientMutator.cs" />
+    <Compile Include="HBasePut.cs" />
+    <Compile Include="HBaseClientPool.cs" />
+    <Compile Include="HBaseMutation.cs" />
+    <Compile Include="PooledHBaseClient.cs" />
+    <Compile Include="PropertyInterceptor.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Static Internals\Logger.cs" />
+    <Compile Include="TimeInterval.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

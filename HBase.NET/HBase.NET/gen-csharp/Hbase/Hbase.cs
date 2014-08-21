@@ -594,6 +594,34 @@ namespace Hbase
       IAsyncResult Begin_getRegionInfo(AsyncCallback callback, object state, byte[] row);
       TRegionInfo End_getRegionInfo(IAsyncResult asyncResult);
       #endif
+      /// <summary>
+      /// Appends values to one or more columns within a single row.
+      /// 
+      /// @return values of columns after the append operation.
+      /// </summary>
+      /// <param name="append">The single append operation to apply</param>
+      List<TCell> append(TAppend append);
+      #if SILVERLIGHT
+      IAsyncResult Begin_append(AsyncCallback callback, object state, TAppend append);
+      List<TCell> End_append(IAsyncResult asyncResult);
+      #endif
+      /// <summary>
+      /// Atomically checks if a row/family/qualifier value matches the expected
+      /// value. If it does, it adds the corresponding mutation operation for put.
+      /// 
+      /// @return true if the new put was executed, false otherwise
+      /// </summary>
+      /// <param name="tableName">name of table</param>
+      /// <param name="row">row key</param>
+      /// <param name="column">column name</param>
+      /// <param name="value">the expected value for the column parameter, if notprovided the check is for the non-existence of thecolumn in question</param>
+      /// <param name="mput">mutation for the put</param>
+      /// <param name="attributes">Mutation attributes</param>
+      bool checkAndPut(byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes);
+      #if SILVERLIGHT
+      IAsyncResult Begin_checkAndPut(AsyncCallback callback, object state, byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes);
+      bool End_checkAndPut(IAsyncResult asyncResult);
+      #endif
     }
 
     public class Client : Iface {
@@ -3842,6 +3870,162 @@ namespace Hbase
         throw new TApplicationException(TApplicationException.ExceptionType.MissingResult, "getRegionInfo failed: unknown result");
       }
 
+      
+      #if SILVERLIGHT
+      public IAsyncResult Begin_append(AsyncCallback callback, object state, TAppend append)
+      {
+        return send_append(callback, state, append);
+      }
+
+      public List<TCell> End_append(IAsyncResult asyncResult)
+      {
+        oprot_.Transport.EndFlush(asyncResult);
+        return recv_append();
+      }
+
+      #endif
+
+      /// <summary>
+      /// Appends values to one or more columns within a single row.
+      /// 
+      /// @return values of columns after the append operation.
+      /// </summary>
+      /// <param name="append">The single append operation to apply</param>
+      public List<TCell> append(TAppend append)
+      {
+        #if !SILVERLIGHT
+        send_append(append);
+        return recv_append();
+
+        #else
+        var asyncResult = Begin_append(null, null, append);
+        return End_append(asyncResult);
+
+        #endif
+      }
+      #if SILVERLIGHT
+      public IAsyncResult send_append(AsyncCallback callback, object state, TAppend append)
+      #else
+      public void send_append(TAppend append)
+      #endif
+      {
+        oprot_.WriteMessageBegin(new TMessage("append", TMessageType.Call, seqid_));
+        append_args args = new append_args();
+        args.Append = append;
+        args.Write(oprot_);
+        oprot_.WriteMessageEnd();
+        #if SILVERLIGHT
+        return oprot_.Transport.BeginFlush(callback, state);
+        #else
+        oprot_.Transport.Flush();
+        #endif
+      }
+
+      public List<TCell> recv_append()
+      {
+        TMessage msg = iprot_.ReadMessageBegin();
+        if (msg.Type == TMessageType.Exception) {
+          TApplicationException x = TApplicationException.Read(iprot_);
+          iprot_.ReadMessageEnd();
+          throw x;
+        }
+        append_result result = new append_result();
+        result.Read(iprot_);
+        iprot_.ReadMessageEnd();
+        if (result.__isset.success) {
+          return result.Success;
+        }
+        if (result.__isset.io) {
+          throw result.Io;
+        }
+        throw new TApplicationException(TApplicationException.ExceptionType.MissingResult, "append failed: unknown result");
+      }
+
+      
+      #if SILVERLIGHT
+      public IAsyncResult Begin_checkAndPut(AsyncCallback callback, object state, byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes)
+      {
+        return send_checkAndPut(callback, state, tableName, row, column, value, mput, attributes);
+      }
+
+      public bool End_checkAndPut(IAsyncResult asyncResult)
+      {
+        oprot_.Transport.EndFlush(asyncResult);
+        return recv_checkAndPut();
+      }
+
+      #endif
+
+      /// <summary>
+      /// Atomically checks if a row/family/qualifier value matches the expected
+      /// value. If it does, it adds the corresponding mutation operation for put.
+      /// 
+      /// @return true if the new put was executed, false otherwise
+      /// </summary>
+      /// <param name="tableName">name of table</param>
+      /// <param name="row">row key</param>
+      /// <param name="column">column name</param>
+      /// <param name="value">the expected value for the column parameter, if notprovided the check is for the non-existence of thecolumn in question</param>
+      /// <param name="mput">mutation for the put</param>
+      /// <param name="attributes">Mutation attributes</param>
+      public bool checkAndPut(byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes)
+      {
+        #if !SILVERLIGHT
+        send_checkAndPut(tableName, row, column, value, mput, attributes);
+        return recv_checkAndPut();
+
+        #else
+        var asyncResult = Begin_checkAndPut(null, null, tableName, row, column, value, mput, attributes);
+        return End_checkAndPut(asyncResult);
+
+        #endif
+      }
+      #if SILVERLIGHT
+      public IAsyncResult send_checkAndPut(AsyncCallback callback, object state, byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes)
+      #else
+      public void send_checkAndPut(byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes)
+      #endif
+      {
+        oprot_.WriteMessageBegin(new TMessage("checkAndPut", TMessageType.Call, seqid_));
+        checkAndPut_args args = new checkAndPut_args();
+        args.TableName = tableName;
+        args.Row = row;
+        args.Column = column;
+        args.Value = value;
+        args.Mput = mput;
+        args.Attributes = attributes;
+        args.Write(oprot_);
+        oprot_.WriteMessageEnd();
+        #if SILVERLIGHT
+        return oprot_.Transport.BeginFlush(callback, state);
+        #else
+        oprot_.Transport.Flush();
+        #endif
+      }
+
+      public bool recv_checkAndPut()
+      {
+        TMessage msg = iprot_.ReadMessageBegin();
+        if (msg.Type == TMessageType.Exception) {
+          TApplicationException x = TApplicationException.Read(iprot_);
+          iprot_.ReadMessageEnd();
+          throw x;
+        }
+        checkAndPut_result result = new checkAndPut_result();
+        result.Read(iprot_);
+        iprot_.ReadMessageEnd();
+        if (result.__isset.success) {
+          return result.Success;
+        }
+        if (result.__isset.io) {
+          throw result.Io;
+        }
+        if (result.__isset.ia) {
+          throw result.Ia;
+        }
+        throw new TApplicationException(TApplicationException.ExceptionType.MissingResult, "checkAndPut failed: unknown result");
+      }
+
     }
     public class Processor : TProcessor {
       public Processor(Iface iface)
@@ -3890,6 +4074,8 @@ namespace Hbase
         processMap_["scannerClose"] = scannerClose_Process;
         processMap_["getRowOrBefore"] = getRowOrBefore_Process;
         processMap_["getRegionInfo"] = getRegionInfo_Process;
+        processMap_["append"] = append_Process;
+        processMap_["checkAndPut"] = checkAndPut_Process;
       }
 
       protected delegate void ProcessFunction(int seqid, TProtocol iprot, TProtocol oprot);
@@ -4668,6 +4854,42 @@ namespace Hbase
           result.Io = io;
         }
         oprot.WriteMessageBegin(new TMessage("getRegionInfo", TMessageType.Reply, seqid)); 
+        result.Write(oprot);
+        oprot.WriteMessageEnd();
+        oprot.Transport.Flush();
+      }
+
+      public void append_Process(int seqid, TProtocol iprot, TProtocol oprot)
+      {
+        append_args args = new append_args();
+        args.Read(iprot);
+        iprot.ReadMessageEnd();
+        append_result result = new append_result();
+        try {
+          result.Success = iface_.append(args.Append);
+        } catch (IOError io) {
+          result.Io = io;
+        }
+        oprot.WriteMessageBegin(new TMessage("append", TMessageType.Reply, seqid)); 
+        result.Write(oprot);
+        oprot.WriteMessageEnd();
+        oprot.Transport.Flush();
+      }
+
+      public void checkAndPut_Process(int seqid, TProtocol iprot, TProtocol oprot)
+      {
+        checkAndPut_args args = new checkAndPut_args();
+        args.Read(iprot);
+        iprot.ReadMessageEnd();
+        checkAndPut_result result = new checkAndPut_result();
+        try {
+          result.Success = iface_.checkAndPut(args.TableName, args.Row, args.Column, args.Value, args.Mput, args.Attributes);
+        } catch (IOError io) {
+          result.Io = io;
+        } catch (IllegalArgument ia) {
+          result.Ia = ia;
+        }
+        oprot.WriteMessageBegin(new TMessage("checkAndPut", TMessageType.Reply, seqid)); 
         result.Write(oprot);
         oprot.WriteMessageEnd();
         oprot.Transport.Flush();
@@ -5715,12 +5937,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<byte[]>();
-                  TList _list13 = iprot.ReadListBegin();
-                  for( int _i14 = 0; _i14 < _list13.Count; ++_i14)
+                  TList _list25 = iprot.ReadListBegin();
+                  for( int _i26 = 0; _i26 < _list25.Count; ++_i26)
                   {
-                    byte[] _elem15 = null;
-                    _elem15 = iprot.ReadBinary();
-                    Success.Add(_elem15);
+                    byte[] _elem27 = null;
+                    _elem27 = iprot.ReadBinary();
+                    Success.Add(_elem27);
                   }
                   iprot.ReadListEnd();
                 }
@@ -5758,9 +5980,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.String, Success.Count));
-              foreach (byte[] _iter16 in Success)
+              foreach (byte[] _iter28 in Success)
               {
-                oprot.WriteBinary(_iter16);
+                oprot.WriteBinary(_iter28);
               }
               oprot.WriteListEnd();
             }
@@ -5946,15 +6168,15 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Success = new Dictionary<byte[], ColumnDescriptor>();
-                  TMap _map17 = iprot.ReadMapBegin();
-                  for( int _i18 = 0; _i18 < _map17.Count; ++_i18)
+                  TMap _map29 = iprot.ReadMapBegin();
+                  for( int _i30 = 0; _i30 < _map29.Count; ++_i30)
                   {
-                    byte[] _key19;
-                    ColumnDescriptor _val20;
-                    _key19 = iprot.ReadBinary();
-                    _val20 = new ColumnDescriptor();
-                    _val20.Read(iprot);
-                    Success[_key19] = _val20;
+                    byte[] _key31;
+                    ColumnDescriptor _val32;
+                    _key31 = iprot.ReadBinary();
+                    _val32 = new ColumnDescriptor();
+                    _val32.Read(iprot);
+                    Success[_key31] = _val32;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -5992,10 +6214,10 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteMapBegin(new TMap(TType.String, TType.Struct, Success.Count));
-              foreach (byte[] _iter21 in Success.Keys)
+              foreach (byte[] _iter33 in Success.Keys)
               {
-                oprot.WriteBinary(_iter21);
-                Success[_iter21].Write(oprot);
+                oprot.WriteBinary(_iter33);
+                Success[_iter33].Write(oprot);
               }
               oprot.WriteMapEnd();
             }
@@ -6181,13 +6403,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRegionInfo>();
-                  TList _list22 = iprot.ReadListBegin();
-                  for( int _i23 = 0; _i23 < _list22.Count; ++_i23)
+                  TList _list34 = iprot.ReadListBegin();
+                  for( int _i35 = 0; _i35 < _list34.Count; ++_i35)
                   {
-                    TRegionInfo _elem24 = new TRegionInfo();
-                    _elem24 = new TRegionInfo();
-                    _elem24.Read(iprot);
-                    Success.Add(_elem24);
+                    TRegionInfo _elem36 = new TRegionInfo();
+                    _elem36 = new TRegionInfo();
+                    _elem36.Read(iprot);
+                    Success.Add(_elem36);
                   }
                   iprot.ReadListEnd();
                 }
@@ -6225,9 +6447,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRegionInfo _iter25 in Success)
+              foreach (TRegionInfo _iter37 in Success)
               {
-                _iter25.Write(oprot);
+                _iter37.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -6336,13 +6558,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   ColumnFamilies = new List<ColumnDescriptor>();
-                  TList _list26 = iprot.ReadListBegin();
-                  for( int _i27 = 0; _i27 < _list26.Count; ++_i27)
+                  TList _list38 = iprot.ReadListBegin();
+                  for( int _i39 = 0; _i39 < _list38.Count; ++_i39)
                   {
-                    ColumnDescriptor _elem28 = new ColumnDescriptor();
-                    _elem28 = new ColumnDescriptor();
-                    _elem28.Read(iprot);
-                    ColumnFamilies.Add(_elem28);
+                    ColumnDescriptor _elem40 = new ColumnDescriptor();
+                    _elem40 = new ColumnDescriptor();
+                    _elem40.Read(iprot);
+                    ColumnFamilies.Add(_elem40);
                   }
                   iprot.ReadListEnd();
                 }
@@ -6378,9 +6600,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, ColumnFamilies.Count));
-            foreach (ColumnDescriptor _iter29 in ColumnFamilies)
+            foreach (ColumnDescriptor _iter41 in ColumnFamilies)
             {
-              _iter29.Write(oprot);
+              _iter41.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -6869,14 +7091,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map30 = iprot.ReadMapBegin();
-                  for( int _i31 = 0; _i31 < _map30.Count; ++_i31)
+                  TMap _map42 = iprot.ReadMapBegin();
+                  for( int _i43 = 0; _i43 < _map42.Count; ++_i43)
                   {
-                    byte[] _key32;
-                    byte[] _val33;
-                    _key32 = iprot.ReadBinary();
-                    _val33 = iprot.ReadBinary();
-                    Attributes[_key32] = _val33;
+                    byte[] _key44;
+                    byte[] _val45;
+                    _key44 = iprot.ReadBinary();
+                    _val45 = iprot.ReadBinary();
+                    Attributes[_key44] = _val45;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -6928,10 +7150,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter34 in Attributes.Keys)
+            foreach (byte[] _iter46 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter34);
-              oprot.WriteBinary(Attributes[_iter34]);
+              oprot.WriteBinary(_iter46);
+              oprot.WriteBinary(Attributes[_iter46]);
             }
             oprot.WriteMapEnd();
           }
@@ -7021,13 +7243,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TCell>();
-                  TList _list35 = iprot.ReadListBegin();
-                  for( int _i36 = 0; _i36 < _list35.Count; ++_i36)
+                  TList _list47 = iprot.ReadListBegin();
+                  for( int _i48 = 0; _i48 < _list47.Count; ++_i48)
                   {
-                    TCell _elem37 = new TCell();
-                    _elem37 = new TCell();
-                    _elem37.Read(iprot);
-                    Success.Add(_elem37);
+                    TCell _elem49 = new TCell();
+                    _elem49 = new TCell();
+                    _elem49.Read(iprot);
+                    Success.Add(_elem49);
                   }
                   iprot.ReadListEnd();
                 }
@@ -7065,9 +7287,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TCell _iter38 in Success)
+              foreach (TCell _iter50 in Success)
               {
-                _iter38.Write(oprot);
+                _iter50.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -7251,14 +7473,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map39 = iprot.ReadMapBegin();
-                  for( int _i40 = 0; _i40 < _map39.Count; ++_i40)
+                  TMap _map51 = iprot.ReadMapBegin();
+                  for( int _i52 = 0; _i52 < _map51.Count; ++_i52)
                   {
-                    byte[] _key41;
-                    byte[] _val42;
-                    _key41 = iprot.ReadBinary();
-                    _val42 = iprot.ReadBinary();
-                    Attributes[_key41] = _val42;
+                    byte[] _key53;
+                    byte[] _val54;
+                    _key53 = iprot.ReadBinary();
+                    _val54 = iprot.ReadBinary();
+                    Attributes[_key53] = _val54;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -7318,10 +7540,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter43 in Attributes.Keys)
+            foreach (byte[] _iter55 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter43);
-              oprot.WriteBinary(Attributes[_iter43]);
+              oprot.WriteBinary(_iter55);
+              oprot.WriteBinary(Attributes[_iter55]);
             }
             oprot.WriteMapEnd();
           }
@@ -7413,13 +7635,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TCell>();
-                  TList _list44 = iprot.ReadListBegin();
-                  for( int _i45 = 0; _i45 < _list44.Count; ++_i45)
+                  TList _list56 = iprot.ReadListBegin();
+                  for( int _i57 = 0; _i57 < _list56.Count; ++_i57)
                   {
-                    TCell _elem46 = new TCell();
-                    _elem46 = new TCell();
-                    _elem46.Read(iprot);
-                    Success.Add(_elem46);
+                    TCell _elem58 = new TCell();
+                    _elem58 = new TCell();
+                    _elem58.Read(iprot);
+                    Success.Add(_elem58);
                   }
                   iprot.ReadListEnd();
                 }
@@ -7457,9 +7679,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TCell _iter47 in Success)
+              foreach (TCell _iter59 in Success)
               {
-                _iter47.Write(oprot);
+                _iter59.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -7668,14 +7890,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map48 = iprot.ReadMapBegin();
-                  for( int _i49 = 0; _i49 < _map48.Count; ++_i49)
+                  TMap _map60 = iprot.ReadMapBegin();
+                  for( int _i61 = 0; _i61 < _map60.Count; ++_i61)
                   {
-                    byte[] _key50;
-                    byte[] _val51;
-                    _key50 = iprot.ReadBinary();
-                    _val51 = iprot.ReadBinary();
-                    Attributes[_key50] = _val51;
+                    byte[] _key62;
+                    byte[] _val63;
+                    _key62 = iprot.ReadBinary();
+                    _val63 = iprot.ReadBinary();
+                    Attributes[_key62] = _val63;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -7743,10 +7965,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter52 in Attributes.Keys)
+            foreach (byte[] _iter64 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter52);
-              oprot.WriteBinary(Attributes[_iter52]);
+              oprot.WriteBinary(_iter64);
+              oprot.WriteBinary(Attributes[_iter64]);
             }
             oprot.WriteMapEnd();
           }
@@ -7840,13 +8062,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TCell>();
-                  TList _list53 = iprot.ReadListBegin();
-                  for( int _i54 = 0; _i54 < _list53.Count; ++_i54)
+                  TList _list65 = iprot.ReadListBegin();
+                  for( int _i66 = 0; _i66 < _list65.Count; ++_i66)
                   {
-                    TCell _elem55 = new TCell();
-                    _elem55 = new TCell();
-                    _elem55.Read(iprot);
-                    Success.Add(_elem55);
+                    TCell _elem67 = new TCell();
+                    _elem67 = new TCell();
+                    _elem67.Read(iprot);
+                    Success.Add(_elem67);
                   }
                   iprot.ReadListEnd();
                 }
@@ -7884,9 +8106,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TCell _iter56 in Success)
+              foreach (TCell _iter68 in Success)
               {
-                _iter56.Write(oprot);
+                _iter68.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -8020,14 +8242,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map57 = iprot.ReadMapBegin();
-                  for( int _i58 = 0; _i58 < _map57.Count; ++_i58)
+                  TMap _map69 = iprot.ReadMapBegin();
+                  for( int _i70 = 0; _i70 < _map69.Count; ++_i70)
                   {
-                    byte[] _key59;
-                    byte[] _val60;
-                    _key59 = iprot.ReadBinary();
-                    _val60 = iprot.ReadBinary();
-                    Attributes[_key59] = _val60;
+                    byte[] _key71;
+                    byte[] _val72;
+                    _key71 = iprot.ReadBinary();
+                    _val72 = iprot.ReadBinary();
+                    Attributes[_key71] = _val72;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -8071,10 +8293,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter61 in Attributes.Keys)
+            foreach (byte[] _iter73 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter61);
-              oprot.WriteBinary(Attributes[_iter61]);
+              oprot.WriteBinary(_iter73);
+              oprot.WriteBinary(Attributes[_iter73]);
             }
             oprot.WriteMapEnd();
           }
@@ -8162,13 +8384,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list62 = iprot.ReadListBegin();
-                  for( int _i63 = 0; _i63 < _list62.Count; ++_i63)
+                  TList _list74 = iprot.ReadListBegin();
+                  for( int _i75 = 0; _i75 < _list74.Count; ++_i75)
                   {
-                    TRowResult _elem64 = new TRowResult();
-                    _elem64 = new TRowResult();
-                    _elem64.Read(iprot);
-                    Success.Add(_elem64);
+                    TRowResult _elem76 = new TRowResult();
+                    _elem76 = new TRowResult();
+                    _elem76.Read(iprot);
+                    Success.Add(_elem76);
                   }
                   iprot.ReadListEnd();
                 }
@@ -8206,9 +8428,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter65 in Success)
+              foreach (TRowResult _iter77 in Success)
               {
-                _iter65.Write(oprot);
+                _iter77.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -8360,12 +8582,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list66 = iprot.ReadListBegin();
-                  for( int _i67 = 0; _i67 < _list66.Count; ++_i67)
+                  TList _list78 = iprot.ReadListBegin();
+                  for( int _i79 = 0; _i79 < _list78.Count; ++_i79)
                   {
-                    byte[] _elem68 = null;
-                    _elem68 = iprot.ReadBinary();
-                    Columns.Add(_elem68);
+                    byte[] _elem80 = null;
+                    _elem80 = iprot.ReadBinary();
+                    Columns.Add(_elem80);
                   }
                   iprot.ReadListEnd();
                 }
@@ -8377,14 +8599,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map69 = iprot.ReadMapBegin();
-                  for( int _i70 = 0; _i70 < _map69.Count; ++_i70)
+                  TMap _map81 = iprot.ReadMapBegin();
+                  for( int _i82 = 0; _i82 < _map81.Count; ++_i82)
                   {
-                    byte[] _key71;
-                    byte[] _val72;
-                    _key71 = iprot.ReadBinary();
-                    _val72 = iprot.ReadBinary();
-                    Attributes[_key71] = _val72;
+                    byte[] _key83;
+                    byte[] _val84;
+                    _key83 = iprot.ReadBinary();
+                    _val84 = iprot.ReadBinary();
+                    Attributes[_key83] = _val84;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -8428,9 +8650,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter73 in Columns)
+            foreach (byte[] _iter85 in Columns)
             {
-              oprot.WriteBinary(_iter73);
+              oprot.WriteBinary(_iter85);
             }
             oprot.WriteListEnd();
           }
@@ -8443,10 +8665,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter74 in Attributes.Keys)
+            foreach (byte[] _iter86 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter74);
-              oprot.WriteBinary(Attributes[_iter74]);
+              oprot.WriteBinary(_iter86);
+              oprot.WriteBinary(Attributes[_iter86]);
             }
             oprot.WriteMapEnd();
           }
@@ -8536,13 +8758,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list75 = iprot.ReadListBegin();
-                  for( int _i76 = 0; _i76 < _list75.Count; ++_i76)
+                  TList _list87 = iprot.ReadListBegin();
+                  for( int _i88 = 0; _i88 < _list87.Count; ++_i88)
                   {
-                    TRowResult _elem77 = new TRowResult();
-                    _elem77 = new TRowResult();
-                    _elem77.Read(iprot);
-                    Success.Add(_elem77);
+                    TRowResult _elem89 = new TRowResult();
+                    _elem89 = new TRowResult();
+                    _elem89.Read(iprot);
+                    Success.Add(_elem89);
                   }
                   iprot.ReadListEnd();
                 }
@@ -8580,9 +8802,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter78 in Success)
+              foreach (TRowResult _iter90 in Success)
               {
-                _iter78.Write(oprot);
+                _iter90.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -8741,14 +8963,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map79 = iprot.ReadMapBegin();
-                  for( int _i80 = 0; _i80 < _map79.Count; ++_i80)
+                  TMap _map91 = iprot.ReadMapBegin();
+                  for( int _i92 = 0; _i92 < _map91.Count; ++_i92)
                   {
-                    byte[] _key81;
-                    byte[] _val82;
-                    _key81 = iprot.ReadBinary();
-                    _val82 = iprot.ReadBinary();
-                    Attributes[_key81] = _val82;
+                    byte[] _key93;
+                    byte[] _val94;
+                    _key93 = iprot.ReadBinary();
+                    _val94 = iprot.ReadBinary();
+                    Attributes[_key93] = _val94;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -8800,10 +9022,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter83 in Attributes.Keys)
+            foreach (byte[] _iter95 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter83);
-              oprot.WriteBinary(Attributes[_iter83]);
+              oprot.WriteBinary(_iter95);
+              oprot.WriteBinary(Attributes[_iter95]);
             }
             oprot.WriteMapEnd();
           }
@@ -8893,13 +9115,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list84 = iprot.ReadListBegin();
-                  for( int _i85 = 0; _i85 < _list84.Count; ++_i85)
+                  TList _list96 = iprot.ReadListBegin();
+                  for( int _i97 = 0; _i97 < _list96.Count; ++_i97)
                   {
-                    TRowResult _elem86 = new TRowResult();
-                    _elem86 = new TRowResult();
-                    _elem86.Read(iprot);
-                    Success.Add(_elem86);
+                    TRowResult _elem98 = new TRowResult();
+                    _elem98 = new TRowResult();
+                    _elem98.Read(iprot);
+                    Success.Add(_elem98);
                   }
                   iprot.ReadListEnd();
                 }
@@ -8937,9 +9159,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter87 in Success)
+              foreach (TRowResult _iter99 in Success)
               {
-                _iter87.Write(oprot);
+                _iter99.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -9106,12 +9328,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list88 = iprot.ReadListBegin();
-                  for( int _i89 = 0; _i89 < _list88.Count; ++_i89)
+                  TList _list100 = iprot.ReadListBegin();
+                  for( int _i101 = 0; _i101 < _list100.Count; ++_i101)
                   {
-                    byte[] _elem90 = null;
-                    _elem90 = iprot.ReadBinary();
-                    Columns.Add(_elem90);
+                    byte[] _elem102 = null;
+                    _elem102 = iprot.ReadBinary();
+                    Columns.Add(_elem102);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9130,14 +9352,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map91 = iprot.ReadMapBegin();
-                  for( int _i92 = 0; _i92 < _map91.Count; ++_i92)
+                  TMap _map103 = iprot.ReadMapBegin();
+                  for( int _i104 = 0; _i104 < _map103.Count; ++_i104)
                   {
-                    byte[] _key93;
-                    byte[] _val94;
-                    _key93 = iprot.ReadBinary();
-                    _val94 = iprot.ReadBinary();
-                    Attributes[_key93] = _val94;
+                    byte[] _key105;
+                    byte[] _val106;
+                    _key105 = iprot.ReadBinary();
+                    _val106 = iprot.ReadBinary();
+                    Attributes[_key105] = _val106;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -9181,9 +9403,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter95 in Columns)
+            foreach (byte[] _iter107 in Columns)
             {
-              oprot.WriteBinary(_iter95);
+              oprot.WriteBinary(_iter107);
             }
             oprot.WriteListEnd();
           }
@@ -9204,10 +9426,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter96 in Attributes.Keys)
+            foreach (byte[] _iter108 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter96);
-              oprot.WriteBinary(Attributes[_iter96]);
+              oprot.WriteBinary(_iter108);
+              oprot.WriteBinary(Attributes[_iter108]);
             }
             oprot.WriteMapEnd();
           }
@@ -9299,13 +9521,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list97 = iprot.ReadListBegin();
-                  for( int _i98 = 0; _i98 < _list97.Count; ++_i98)
+                  TList _list109 = iprot.ReadListBegin();
+                  for( int _i110 = 0; _i110 < _list109.Count; ++_i110)
                   {
-                    TRowResult _elem99 = new TRowResult();
-                    _elem99 = new TRowResult();
-                    _elem99.Read(iprot);
-                    Success.Add(_elem99);
+                    TRowResult _elem111 = new TRowResult();
+                    _elem111 = new TRowResult();
+                    _elem111.Read(iprot);
+                    Success.Add(_elem111);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9343,9 +9565,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter100 in Success)
+              foreach (TRowResult _iter112 in Success)
               {
-                _iter100.Write(oprot);
+                _iter112.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -9472,12 +9694,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Rows = new List<byte[]>();
-                  TList _list101 = iprot.ReadListBegin();
-                  for( int _i102 = 0; _i102 < _list101.Count; ++_i102)
+                  TList _list113 = iprot.ReadListBegin();
+                  for( int _i114 = 0; _i114 < _list113.Count; ++_i114)
                   {
-                    byte[] _elem103 = null;
-                    _elem103 = iprot.ReadBinary();
-                    Rows.Add(_elem103);
+                    byte[] _elem115 = null;
+                    _elem115 = iprot.ReadBinary();
+                    Rows.Add(_elem115);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9489,14 +9711,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map104 = iprot.ReadMapBegin();
-                  for( int _i105 = 0; _i105 < _map104.Count; ++_i105)
+                  TMap _map116 = iprot.ReadMapBegin();
+                  for( int _i117 = 0; _i117 < _map116.Count; ++_i117)
                   {
-                    byte[] _key106;
-                    byte[] _val107;
-                    _key106 = iprot.ReadBinary();
-                    _val107 = iprot.ReadBinary();
-                    Attributes[_key106] = _val107;
+                    byte[] _key118;
+                    byte[] _val119;
+                    _key118 = iprot.ReadBinary();
+                    _val119 = iprot.ReadBinary();
+                    Attributes[_key118] = _val119;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -9532,9 +9754,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Rows.Count));
-            foreach (byte[] _iter108 in Rows)
+            foreach (byte[] _iter120 in Rows)
             {
-              oprot.WriteBinary(_iter108);
+              oprot.WriteBinary(_iter120);
             }
             oprot.WriteListEnd();
           }
@@ -9547,10 +9769,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter109 in Attributes.Keys)
+            foreach (byte[] _iter121 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter109);
-              oprot.WriteBinary(Attributes[_iter109]);
+              oprot.WriteBinary(_iter121);
+              oprot.WriteBinary(Attributes[_iter121]);
             }
             oprot.WriteMapEnd();
           }
@@ -9638,13 +9860,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list110 = iprot.ReadListBegin();
-                  for( int _i111 = 0; _i111 < _list110.Count; ++_i111)
+                  TList _list122 = iprot.ReadListBegin();
+                  for( int _i123 = 0; _i123 < _list122.Count; ++_i123)
                   {
-                    TRowResult _elem112 = new TRowResult();
-                    _elem112 = new TRowResult();
-                    _elem112.Read(iprot);
-                    Success.Add(_elem112);
+                    TRowResult _elem124 = new TRowResult();
+                    _elem124 = new TRowResult();
+                    _elem124.Read(iprot);
+                    Success.Add(_elem124);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9682,9 +9904,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter113 in Success)
+              foreach (TRowResult _iter125 in Success)
               {
-                _iter113.Write(oprot);
+                _iter125.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -9829,12 +10051,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Rows = new List<byte[]>();
-                  TList _list114 = iprot.ReadListBegin();
-                  for( int _i115 = 0; _i115 < _list114.Count; ++_i115)
+                  TList _list126 = iprot.ReadListBegin();
+                  for( int _i127 = 0; _i127 < _list126.Count; ++_i127)
                   {
-                    byte[] _elem116 = null;
-                    _elem116 = iprot.ReadBinary();
-                    Rows.Add(_elem116);
+                    byte[] _elem128 = null;
+                    _elem128 = iprot.ReadBinary();
+                    Rows.Add(_elem128);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9846,12 +10068,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list117 = iprot.ReadListBegin();
-                  for( int _i118 = 0; _i118 < _list117.Count; ++_i118)
+                  TList _list129 = iprot.ReadListBegin();
+                  for( int _i130 = 0; _i130 < _list129.Count; ++_i130)
                   {
-                    byte[] _elem119 = null;
-                    _elem119 = iprot.ReadBinary();
-                    Columns.Add(_elem119);
+                    byte[] _elem131 = null;
+                    _elem131 = iprot.ReadBinary();
+                    Columns.Add(_elem131);
                   }
                   iprot.ReadListEnd();
                 }
@@ -9863,14 +10085,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map120 = iprot.ReadMapBegin();
-                  for( int _i121 = 0; _i121 < _map120.Count; ++_i121)
+                  TMap _map132 = iprot.ReadMapBegin();
+                  for( int _i133 = 0; _i133 < _map132.Count; ++_i133)
                   {
-                    byte[] _key122;
-                    byte[] _val123;
-                    _key122 = iprot.ReadBinary();
-                    _val123 = iprot.ReadBinary();
-                    Attributes[_key122] = _val123;
+                    byte[] _key134;
+                    byte[] _val135;
+                    _key134 = iprot.ReadBinary();
+                    _val135 = iprot.ReadBinary();
+                    Attributes[_key134] = _val135;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -9906,9 +10128,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Rows.Count));
-            foreach (byte[] _iter124 in Rows)
+            foreach (byte[] _iter136 in Rows)
             {
-              oprot.WriteBinary(_iter124);
+              oprot.WriteBinary(_iter136);
             }
             oprot.WriteListEnd();
           }
@@ -9921,9 +10143,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter125 in Columns)
+            foreach (byte[] _iter137 in Columns)
             {
-              oprot.WriteBinary(_iter125);
+              oprot.WriteBinary(_iter137);
             }
             oprot.WriteListEnd();
           }
@@ -9936,10 +10158,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter126 in Attributes.Keys)
+            foreach (byte[] _iter138 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter126);
-              oprot.WriteBinary(Attributes[_iter126]);
+              oprot.WriteBinary(_iter138);
+              oprot.WriteBinary(Attributes[_iter138]);
             }
             oprot.WriteMapEnd();
           }
@@ -10029,13 +10251,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list127 = iprot.ReadListBegin();
-                  for( int _i128 = 0; _i128 < _list127.Count; ++_i128)
+                  TList _list139 = iprot.ReadListBegin();
+                  for( int _i140 = 0; _i140 < _list139.Count; ++_i140)
                   {
-                    TRowResult _elem129 = new TRowResult();
-                    _elem129 = new TRowResult();
-                    _elem129.Read(iprot);
-                    Success.Add(_elem129);
+                    TRowResult _elem141 = new TRowResult();
+                    _elem141 = new TRowResult();
+                    _elem141.Read(iprot);
+                    Success.Add(_elem141);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10073,9 +10295,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter130 in Success)
+              foreach (TRowResult _iter142 in Success)
               {
-                _iter130.Write(oprot);
+                _iter142.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -10220,12 +10442,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Rows = new List<byte[]>();
-                  TList _list131 = iprot.ReadListBegin();
-                  for( int _i132 = 0; _i132 < _list131.Count; ++_i132)
+                  TList _list143 = iprot.ReadListBegin();
+                  for( int _i144 = 0; _i144 < _list143.Count; ++_i144)
                   {
-                    byte[] _elem133 = null;
-                    _elem133 = iprot.ReadBinary();
-                    Rows.Add(_elem133);
+                    byte[] _elem145 = null;
+                    _elem145 = iprot.ReadBinary();
+                    Rows.Add(_elem145);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10244,14 +10466,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map134 = iprot.ReadMapBegin();
-                  for( int _i135 = 0; _i135 < _map134.Count; ++_i135)
+                  TMap _map146 = iprot.ReadMapBegin();
+                  for( int _i147 = 0; _i147 < _map146.Count; ++_i147)
                   {
-                    byte[] _key136;
-                    byte[] _val137;
-                    _key136 = iprot.ReadBinary();
-                    _val137 = iprot.ReadBinary();
-                    Attributes[_key136] = _val137;
+                    byte[] _key148;
+                    byte[] _val149;
+                    _key148 = iprot.ReadBinary();
+                    _val149 = iprot.ReadBinary();
+                    Attributes[_key148] = _val149;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -10287,9 +10509,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Rows.Count));
-            foreach (byte[] _iter138 in Rows)
+            foreach (byte[] _iter150 in Rows)
             {
-              oprot.WriteBinary(_iter138);
+              oprot.WriteBinary(_iter150);
             }
             oprot.WriteListEnd();
           }
@@ -10310,10 +10532,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter139 in Attributes.Keys)
+            foreach (byte[] _iter151 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter139);
-              oprot.WriteBinary(Attributes[_iter139]);
+              oprot.WriteBinary(_iter151);
+              oprot.WriteBinary(Attributes[_iter151]);
             }
             oprot.WriteMapEnd();
           }
@@ -10403,13 +10625,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list140 = iprot.ReadListBegin();
-                  for( int _i141 = 0; _i141 < _list140.Count; ++_i141)
+                  TList _list152 = iprot.ReadListBegin();
+                  for( int _i153 = 0; _i153 < _list152.Count; ++_i153)
                   {
-                    TRowResult _elem142 = new TRowResult();
-                    _elem142 = new TRowResult();
-                    _elem142.Read(iprot);
-                    Success.Add(_elem142);
+                    TRowResult _elem154 = new TRowResult();
+                    _elem154 = new TRowResult();
+                    _elem154.Read(iprot);
+                    Success.Add(_elem154);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10447,9 +10669,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter143 in Success)
+              foreach (TRowResult _iter155 in Success)
               {
-                _iter143.Write(oprot);
+                _iter155.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -10609,12 +10831,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Rows = new List<byte[]>();
-                  TList _list144 = iprot.ReadListBegin();
-                  for( int _i145 = 0; _i145 < _list144.Count; ++_i145)
+                  TList _list156 = iprot.ReadListBegin();
+                  for( int _i157 = 0; _i157 < _list156.Count; ++_i157)
                   {
-                    byte[] _elem146 = null;
-                    _elem146 = iprot.ReadBinary();
-                    Rows.Add(_elem146);
+                    byte[] _elem158 = null;
+                    _elem158 = iprot.ReadBinary();
+                    Rows.Add(_elem158);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10626,12 +10848,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list147 = iprot.ReadListBegin();
-                  for( int _i148 = 0; _i148 < _list147.Count; ++_i148)
+                  TList _list159 = iprot.ReadListBegin();
+                  for( int _i160 = 0; _i160 < _list159.Count; ++_i160)
                   {
-                    byte[] _elem149 = null;
-                    _elem149 = iprot.ReadBinary();
-                    Columns.Add(_elem149);
+                    byte[] _elem161 = null;
+                    _elem161 = iprot.ReadBinary();
+                    Columns.Add(_elem161);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10650,14 +10872,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map150 = iprot.ReadMapBegin();
-                  for( int _i151 = 0; _i151 < _map150.Count; ++_i151)
+                  TMap _map162 = iprot.ReadMapBegin();
+                  for( int _i163 = 0; _i163 < _map162.Count; ++_i163)
                   {
-                    byte[] _key152;
-                    byte[] _val153;
-                    _key152 = iprot.ReadBinary();
-                    _val153 = iprot.ReadBinary();
-                    Attributes[_key152] = _val153;
+                    byte[] _key164;
+                    byte[] _val165;
+                    _key164 = iprot.ReadBinary();
+                    _val165 = iprot.ReadBinary();
+                    Attributes[_key164] = _val165;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -10693,9 +10915,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Rows.Count));
-            foreach (byte[] _iter154 in Rows)
+            foreach (byte[] _iter166 in Rows)
             {
-              oprot.WriteBinary(_iter154);
+              oprot.WriteBinary(_iter166);
             }
             oprot.WriteListEnd();
           }
@@ -10708,9 +10930,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter155 in Columns)
+            foreach (byte[] _iter167 in Columns)
             {
-              oprot.WriteBinary(_iter155);
+              oprot.WriteBinary(_iter167);
             }
             oprot.WriteListEnd();
           }
@@ -10731,10 +10953,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter156 in Attributes.Keys)
+            foreach (byte[] _iter168 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter156);
-              oprot.WriteBinary(Attributes[_iter156]);
+              oprot.WriteBinary(_iter168);
+              oprot.WriteBinary(Attributes[_iter168]);
             }
             oprot.WriteMapEnd();
           }
@@ -10826,13 +11048,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list157 = iprot.ReadListBegin();
-                  for( int _i158 = 0; _i158 < _list157.Count; ++_i158)
+                  TList _list169 = iprot.ReadListBegin();
+                  for( int _i170 = 0; _i170 < _list169.Count; ++_i170)
                   {
-                    TRowResult _elem159 = new TRowResult();
-                    _elem159 = new TRowResult();
-                    _elem159.Read(iprot);
-                    Success.Add(_elem159);
+                    TRowResult _elem171 = new TRowResult();
+                    _elem171 = new TRowResult();
+                    _elem171.Read(iprot);
+                    Success.Add(_elem171);
                   }
                   iprot.ReadListEnd();
                 }
@@ -10870,9 +11092,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter160 in Success)
+              foreach (TRowResult _iter172 in Success)
               {
-                _iter160.Write(oprot);
+                _iter172.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -11024,13 +11246,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Mutations = new List<Mutation>();
-                  TList _list161 = iprot.ReadListBegin();
-                  for( int _i162 = 0; _i162 < _list161.Count; ++_i162)
+                  TList _list173 = iprot.ReadListBegin();
+                  for( int _i174 = 0; _i174 < _list173.Count; ++_i174)
                   {
-                    Mutation _elem163 = new Mutation();
-                    _elem163 = new Mutation();
-                    _elem163.Read(iprot);
-                    Mutations.Add(_elem163);
+                    Mutation _elem175 = new Mutation();
+                    _elem175 = new Mutation();
+                    _elem175.Read(iprot);
+                    Mutations.Add(_elem175);
                   }
                   iprot.ReadListEnd();
                 }
@@ -11042,14 +11264,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map164 = iprot.ReadMapBegin();
-                  for( int _i165 = 0; _i165 < _map164.Count; ++_i165)
+                  TMap _map176 = iprot.ReadMapBegin();
+                  for( int _i177 = 0; _i177 < _map176.Count; ++_i177)
                   {
-                    byte[] _key166;
-                    byte[] _val167;
-                    _key166 = iprot.ReadBinary();
-                    _val167 = iprot.ReadBinary();
-                    Attributes[_key166] = _val167;
+                    byte[] _key178;
+                    byte[] _val179;
+                    _key178 = iprot.ReadBinary();
+                    _val179 = iprot.ReadBinary();
+                    Attributes[_key178] = _val179;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -11093,9 +11315,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, Mutations.Count));
-            foreach (Mutation _iter168 in Mutations)
+            foreach (Mutation _iter180 in Mutations)
             {
-              _iter168.Write(oprot);
+              _iter180.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -11108,10 +11330,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter169 in Attributes.Keys)
+            foreach (byte[] _iter181 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter169);
-              oprot.WriteBinary(Attributes[_iter169]);
+              oprot.WriteBinary(_iter181);
+              oprot.WriteBinary(Attributes[_iter181]);
             }
             oprot.WriteMapEnd();
           }
@@ -11400,13 +11622,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Mutations = new List<Mutation>();
-                  TList _list170 = iprot.ReadListBegin();
-                  for( int _i171 = 0; _i171 < _list170.Count; ++_i171)
+                  TList _list182 = iprot.ReadListBegin();
+                  for( int _i183 = 0; _i183 < _list182.Count; ++_i183)
                   {
-                    Mutation _elem172 = new Mutation();
-                    _elem172 = new Mutation();
-                    _elem172.Read(iprot);
-                    Mutations.Add(_elem172);
+                    Mutation _elem184 = new Mutation();
+                    _elem184 = new Mutation();
+                    _elem184.Read(iprot);
+                    Mutations.Add(_elem184);
                   }
                   iprot.ReadListEnd();
                 }
@@ -11425,14 +11647,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map173 = iprot.ReadMapBegin();
-                  for( int _i174 = 0; _i174 < _map173.Count; ++_i174)
+                  TMap _map185 = iprot.ReadMapBegin();
+                  for( int _i186 = 0; _i186 < _map185.Count; ++_i186)
                   {
-                    byte[] _key175;
-                    byte[] _val176;
-                    _key175 = iprot.ReadBinary();
-                    _val176 = iprot.ReadBinary();
-                    Attributes[_key175] = _val176;
+                    byte[] _key187;
+                    byte[] _val188;
+                    _key187 = iprot.ReadBinary();
+                    _val188 = iprot.ReadBinary();
+                    Attributes[_key187] = _val188;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -11476,9 +11698,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, Mutations.Count));
-            foreach (Mutation _iter177 in Mutations)
+            foreach (Mutation _iter189 in Mutations)
             {
-              _iter177.Write(oprot);
+              _iter189.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -11499,10 +11721,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter178 in Attributes.Keys)
+            foreach (byte[] _iter190 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter178);
-              oprot.WriteBinary(Attributes[_iter178]);
+              oprot.WriteBinary(_iter190);
+              oprot.WriteBinary(Attributes[_iter190]);
             }
             oprot.WriteMapEnd();
           }
@@ -11750,13 +11972,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   RowBatches = new List<BatchMutation>();
-                  TList _list179 = iprot.ReadListBegin();
-                  for( int _i180 = 0; _i180 < _list179.Count; ++_i180)
+                  TList _list191 = iprot.ReadListBegin();
+                  for( int _i192 = 0; _i192 < _list191.Count; ++_i192)
                   {
-                    BatchMutation _elem181 = new BatchMutation();
-                    _elem181 = new BatchMutation();
-                    _elem181.Read(iprot);
-                    RowBatches.Add(_elem181);
+                    BatchMutation _elem193 = new BatchMutation();
+                    _elem193 = new BatchMutation();
+                    _elem193.Read(iprot);
+                    RowBatches.Add(_elem193);
                   }
                   iprot.ReadListEnd();
                 }
@@ -11768,14 +11990,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map182 = iprot.ReadMapBegin();
-                  for( int _i183 = 0; _i183 < _map182.Count; ++_i183)
+                  TMap _map194 = iprot.ReadMapBegin();
+                  for( int _i195 = 0; _i195 < _map194.Count; ++_i195)
                   {
-                    byte[] _key184;
-                    byte[] _val185;
-                    _key184 = iprot.ReadBinary();
-                    _val185 = iprot.ReadBinary();
-                    Attributes[_key184] = _val185;
+                    byte[] _key196;
+                    byte[] _val197;
+                    _key196 = iprot.ReadBinary();
+                    _val197 = iprot.ReadBinary();
+                    Attributes[_key196] = _val197;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -11811,9 +12033,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, RowBatches.Count));
-            foreach (BatchMutation _iter186 in RowBatches)
+            foreach (BatchMutation _iter198 in RowBatches)
             {
-              _iter186.Write(oprot);
+              _iter198.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -11826,10 +12048,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter187 in Attributes.Keys)
+            foreach (byte[] _iter199 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter187);
-              oprot.WriteBinary(Attributes[_iter187]);
+              oprot.WriteBinary(_iter199);
+              oprot.WriteBinary(Attributes[_iter199]);
             }
             oprot.WriteMapEnd();
           }
@@ -12091,13 +12313,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   RowBatches = new List<BatchMutation>();
-                  TList _list188 = iprot.ReadListBegin();
-                  for( int _i189 = 0; _i189 < _list188.Count; ++_i189)
+                  TList _list200 = iprot.ReadListBegin();
+                  for( int _i201 = 0; _i201 < _list200.Count; ++_i201)
                   {
-                    BatchMutation _elem190 = new BatchMutation();
-                    _elem190 = new BatchMutation();
-                    _elem190.Read(iprot);
-                    RowBatches.Add(_elem190);
+                    BatchMutation _elem202 = new BatchMutation();
+                    _elem202 = new BatchMutation();
+                    _elem202.Read(iprot);
+                    RowBatches.Add(_elem202);
                   }
                   iprot.ReadListEnd();
                 }
@@ -12116,14 +12338,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map191 = iprot.ReadMapBegin();
-                  for( int _i192 = 0; _i192 < _map191.Count; ++_i192)
+                  TMap _map203 = iprot.ReadMapBegin();
+                  for( int _i204 = 0; _i204 < _map203.Count; ++_i204)
                   {
-                    byte[] _key193;
-                    byte[] _val194;
-                    _key193 = iprot.ReadBinary();
-                    _val194 = iprot.ReadBinary();
-                    Attributes[_key193] = _val194;
+                    byte[] _key205;
+                    byte[] _val206;
+                    _key205 = iprot.ReadBinary();
+                    _val206 = iprot.ReadBinary();
+                    Attributes[_key205] = _val206;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -12159,9 +12381,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, RowBatches.Count));
-            foreach (BatchMutation _iter195 in RowBatches)
+            foreach (BatchMutation _iter207 in RowBatches)
             {
-              _iter195.Write(oprot);
+              _iter207.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -12182,10 +12404,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter196 in Attributes.Keys)
+            foreach (byte[] _iter208 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter196);
-              oprot.WriteBinary(Attributes[_iter196]);
+              oprot.WriteBinary(_iter208);
+              oprot.WriteBinary(Attributes[_iter208]);
             }
             oprot.WriteMapEnd();
           }
@@ -12814,14 +13036,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map197 = iprot.ReadMapBegin();
-                  for( int _i198 = 0; _i198 < _map197.Count; ++_i198)
+                  TMap _map209 = iprot.ReadMapBegin();
+                  for( int _i210 = 0; _i210 < _map209.Count; ++_i210)
                   {
-                    byte[] _key199;
-                    byte[] _val200;
-                    _key199 = iprot.ReadBinary();
-                    _val200 = iprot.ReadBinary();
-                    Attributes[_key199] = _val200;
+                    byte[] _key211;
+                    byte[] _val212;
+                    _key211 = iprot.ReadBinary();
+                    _val212 = iprot.ReadBinary();
+                    Attributes[_key211] = _val212;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -12873,10 +13095,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter201 in Attributes.Keys)
+            foreach (byte[] _iter213 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter201);
-              oprot.WriteBinary(Attributes[_iter201]);
+              oprot.WriteBinary(_iter213);
+              oprot.WriteBinary(Attributes[_iter213]);
             }
             oprot.WriteMapEnd();
           }
@@ -13145,14 +13367,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map202 = iprot.ReadMapBegin();
-                  for( int _i203 = 0; _i203 < _map202.Count; ++_i203)
+                  TMap _map214 = iprot.ReadMapBegin();
+                  for( int _i215 = 0; _i215 < _map214.Count; ++_i215)
                   {
-                    byte[] _key204;
-                    byte[] _val205;
-                    _key204 = iprot.ReadBinary();
-                    _val205 = iprot.ReadBinary();
-                    Attributes[_key204] = _val205;
+                    byte[] _key216;
+                    byte[] _val217;
+                    _key216 = iprot.ReadBinary();
+                    _val217 = iprot.ReadBinary();
+                    Attributes[_key216] = _val217;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -13212,10 +13434,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter206 in Attributes.Keys)
+            foreach (byte[] _iter218 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter206);
-              oprot.WriteBinary(Attributes[_iter206]);
+              oprot.WriteBinary(_iter218);
+              oprot.WriteBinary(Attributes[_iter218]);
             }
             oprot.WriteMapEnd();
           }
@@ -13436,14 +13658,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map207 = iprot.ReadMapBegin();
-                  for( int _i208 = 0; _i208 < _map207.Count; ++_i208)
+                  TMap _map219 = iprot.ReadMapBegin();
+                  for( int _i220 = 0; _i220 < _map219.Count; ++_i220)
                   {
-                    byte[] _key209;
-                    byte[] _val210;
-                    _key209 = iprot.ReadBinary();
-                    _val210 = iprot.ReadBinary();
-                    Attributes[_key209] = _val210;
+                    byte[] _key221;
+                    byte[] _val222;
+                    _key221 = iprot.ReadBinary();
+                    _val222 = iprot.ReadBinary();
+                    Attributes[_key221] = _val222;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -13487,10 +13709,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter211 in Attributes.Keys)
+            foreach (byte[] _iter223 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter211);
-              oprot.WriteBinary(Attributes[_iter211]);
+              oprot.WriteBinary(_iter223);
+              oprot.WriteBinary(Attributes[_iter223]);
             }
             oprot.WriteMapEnd();
           }
@@ -13839,13 +14061,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Increments = new List<TIncrement>();
-                  TList _list212 = iprot.ReadListBegin();
-                  for( int _i213 = 0; _i213 < _list212.Count; ++_i213)
+                  TList _list224 = iprot.ReadListBegin();
+                  for( int _i225 = 0; _i225 < _list224.Count; ++_i225)
                   {
-                    TIncrement _elem214 = new TIncrement();
-                    _elem214 = new TIncrement();
-                    _elem214.Read(iprot);
-                    Increments.Add(_elem214);
+                    TIncrement _elem226 = new TIncrement();
+                    _elem226 = new TIncrement();
+                    _elem226.Read(iprot);
+                    Increments.Add(_elem226);
                   }
                   iprot.ReadListEnd();
                 }
@@ -13873,9 +14095,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.Struct, Increments.Count));
-            foreach (TIncrement _iter215 in Increments)
+            foreach (TIncrement _iter227 in Increments)
             {
-              _iter215.Write(oprot);
+              _iter227.Write(oprot);
             }
             oprot.WriteListEnd();
           }
@@ -14113,14 +14335,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map216 = iprot.ReadMapBegin();
-                  for( int _i217 = 0; _i217 < _map216.Count; ++_i217)
+                  TMap _map228 = iprot.ReadMapBegin();
+                  for( int _i229 = 0; _i229 < _map228.Count; ++_i229)
                   {
-                    byte[] _key218;
-                    byte[] _val219;
-                    _key218 = iprot.ReadBinary();
-                    _val219 = iprot.ReadBinary();
-                    Attributes[_key218] = _val219;
+                    byte[] _key230;
+                    byte[] _val231;
+                    _key230 = iprot.ReadBinary();
+                    _val231 = iprot.ReadBinary();
+                    Attributes[_key230] = _val231;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -14172,10 +14394,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter220 in Attributes.Keys)
+            foreach (byte[] _iter232 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter220);
-              oprot.WriteBinary(Attributes[_iter220]);
+              oprot.WriteBinary(_iter232);
+              oprot.WriteBinary(Attributes[_iter232]);
             }
             oprot.WriteMapEnd();
           }
@@ -14395,14 +14617,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map221 = iprot.ReadMapBegin();
-                  for( int _i222 = 0; _i222 < _map221.Count; ++_i222)
+                  TMap _map233 = iprot.ReadMapBegin();
+                  for( int _i234 = 0; _i234 < _map233.Count; ++_i234)
                   {
-                    byte[] _key223;
-                    byte[] _val224;
-                    _key223 = iprot.ReadBinary();
-                    _val224 = iprot.ReadBinary();
-                    Attributes[_key223] = _val224;
+                    byte[] _key235;
+                    byte[] _val236;
+                    _key235 = iprot.ReadBinary();
+                    _val236 = iprot.ReadBinary();
+                    Attributes[_key235] = _val236;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -14446,10 +14668,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter225 in Attributes.Keys)
+            foreach (byte[] _iter237 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter225);
-              oprot.WriteBinary(Attributes[_iter225]);
+              oprot.WriteBinary(_iter237);
+              oprot.WriteBinary(Attributes[_iter237]);
             }
             oprot.WriteMapEnd();
           }
@@ -14718,12 +14940,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list226 = iprot.ReadListBegin();
-                  for( int _i227 = 0; _i227 < _list226.Count; ++_i227)
+                  TList _list238 = iprot.ReadListBegin();
+                  for( int _i239 = 0; _i239 < _list238.Count; ++_i239)
                   {
-                    byte[] _elem228 = null;
-                    _elem228 = iprot.ReadBinary();
-                    Columns.Add(_elem228);
+                    byte[] _elem240 = null;
+                    _elem240 = iprot.ReadBinary();
+                    Columns.Add(_elem240);
                   }
                   iprot.ReadListEnd();
                 }
@@ -14735,14 +14957,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map229 = iprot.ReadMapBegin();
-                  for( int _i230 = 0; _i230 < _map229.Count; ++_i230)
+                  TMap _map241 = iprot.ReadMapBegin();
+                  for( int _i242 = 0; _i242 < _map241.Count; ++_i242)
                   {
-                    byte[] _key231;
-                    byte[] _val232;
-                    _key231 = iprot.ReadBinary();
-                    _val232 = iprot.ReadBinary();
-                    Attributes[_key231] = _val232;
+                    byte[] _key243;
+                    byte[] _val244;
+                    _key243 = iprot.ReadBinary();
+                    _val244 = iprot.ReadBinary();
+                    Attributes[_key243] = _val244;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -14786,9 +15008,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter233 in Columns)
+            foreach (byte[] _iter245 in Columns)
             {
-              oprot.WriteBinary(_iter233);
+              oprot.WriteBinary(_iter245);
             }
             oprot.WriteListEnd();
           }
@@ -14801,10 +15023,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter234 in Attributes.Keys)
+            foreach (byte[] _iter246 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter234);
-              oprot.WriteBinary(Attributes[_iter234]);
+              oprot.WriteBinary(_iter246);
+              oprot.WriteBinary(Attributes[_iter246]);
             }
             oprot.WriteMapEnd();
           }
@@ -15101,12 +15323,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list235 = iprot.ReadListBegin();
-                  for( int _i236 = 0; _i236 < _list235.Count; ++_i236)
+                  TList _list247 = iprot.ReadListBegin();
+                  for( int _i248 = 0; _i248 < _list247.Count; ++_i248)
                   {
-                    byte[] _elem237 = null;
-                    _elem237 = iprot.ReadBinary();
-                    Columns.Add(_elem237);
+                    byte[] _elem249 = null;
+                    _elem249 = iprot.ReadBinary();
+                    Columns.Add(_elem249);
                   }
                   iprot.ReadListEnd();
                 }
@@ -15118,14 +15340,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map238 = iprot.ReadMapBegin();
-                  for( int _i239 = 0; _i239 < _map238.Count; ++_i239)
+                  TMap _map250 = iprot.ReadMapBegin();
+                  for( int _i251 = 0; _i251 < _map250.Count; ++_i251)
                   {
-                    byte[] _key240;
-                    byte[] _val241;
-                    _key240 = iprot.ReadBinary();
-                    _val241 = iprot.ReadBinary();
-                    Attributes[_key240] = _val241;
+                    byte[] _key252;
+                    byte[] _val253;
+                    _key252 = iprot.ReadBinary();
+                    _val253 = iprot.ReadBinary();
+                    Attributes[_key252] = _val253;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -15177,9 +15399,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter242 in Columns)
+            foreach (byte[] _iter254 in Columns)
             {
-              oprot.WriteBinary(_iter242);
+              oprot.WriteBinary(_iter254);
             }
             oprot.WriteListEnd();
           }
@@ -15192,10 +15414,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter243 in Attributes.Keys)
+            foreach (byte[] _iter255 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter243);
-              oprot.WriteBinary(Attributes[_iter243]);
+              oprot.WriteBinary(_iter255);
+              oprot.WriteBinary(Attributes[_iter255]);
             }
             oprot.WriteMapEnd();
           }
@@ -15465,12 +15687,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list244 = iprot.ReadListBegin();
-                  for( int _i245 = 0; _i245 < _list244.Count; ++_i245)
+                  TList _list256 = iprot.ReadListBegin();
+                  for( int _i257 = 0; _i257 < _list256.Count; ++_i257)
                   {
-                    byte[] _elem246 = null;
-                    _elem246 = iprot.ReadBinary();
-                    Columns.Add(_elem246);
+                    byte[] _elem258 = null;
+                    _elem258 = iprot.ReadBinary();
+                    Columns.Add(_elem258);
                   }
                   iprot.ReadListEnd();
                 }
@@ -15482,14 +15704,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map247 = iprot.ReadMapBegin();
-                  for( int _i248 = 0; _i248 < _map247.Count; ++_i248)
+                  TMap _map259 = iprot.ReadMapBegin();
+                  for( int _i260 = 0; _i260 < _map259.Count; ++_i260)
                   {
-                    byte[] _key249;
-                    byte[] _val250;
-                    _key249 = iprot.ReadBinary();
-                    _val250 = iprot.ReadBinary();
-                    Attributes[_key249] = _val250;
+                    byte[] _key261;
+                    byte[] _val262;
+                    _key261 = iprot.ReadBinary();
+                    _val262 = iprot.ReadBinary();
+                    Attributes[_key261] = _val262;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -15533,9 +15755,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter251 in Columns)
+            foreach (byte[] _iter263 in Columns)
             {
-              oprot.WriteBinary(_iter251);
+              oprot.WriteBinary(_iter263);
             }
             oprot.WriteListEnd();
           }
@@ -15548,10 +15770,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter252 in Attributes.Keys)
+            foreach (byte[] _iter264 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter252);
-              oprot.WriteBinary(Attributes[_iter252]);
+              oprot.WriteBinary(_iter264);
+              oprot.WriteBinary(Attributes[_iter264]);
             }
             oprot.WriteMapEnd();
           }
@@ -15840,12 +16062,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list253 = iprot.ReadListBegin();
-                  for( int _i254 = 0; _i254 < _list253.Count; ++_i254)
+                  TList _list265 = iprot.ReadListBegin();
+                  for( int _i266 = 0; _i266 < _list265.Count; ++_i266)
                   {
-                    byte[] _elem255 = null;
-                    _elem255 = iprot.ReadBinary();
-                    Columns.Add(_elem255);
+                    byte[] _elem267 = null;
+                    _elem267 = iprot.ReadBinary();
+                    Columns.Add(_elem267);
                   }
                   iprot.ReadListEnd();
                 }
@@ -15864,14 +16086,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map256 = iprot.ReadMapBegin();
-                  for( int _i257 = 0; _i257 < _map256.Count; ++_i257)
+                  TMap _map268 = iprot.ReadMapBegin();
+                  for( int _i269 = 0; _i269 < _map268.Count; ++_i269)
                   {
-                    byte[] _key258;
-                    byte[] _val259;
-                    _key258 = iprot.ReadBinary();
-                    _val259 = iprot.ReadBinary();
-                    Attributes[_key258] = _val259;
+                    byte[] _key270;
+                    byte[] _val271;
+                    _key270 = iprot.ReadBinary();
+                    _val271 = iprot.ReadBinary();
+                    Attributes[_key270] = _val271;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -15915,9 +16137,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter260 in Columns)
+            foreach (byte[] _iter272 in Columns)
             {
-              oprot.WriteBinary(_iter260);
+              oprot.WriteBinary(_iter272);
             }
             oprot.WriteListEnd();
           }
@@ -15938,10 +16160,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter261 in Attributes.Keys)
+            foreach (byte[] _iter273 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter261);
-              oprot.WriteBinary(Attributes[_iter261]);
+              oprot.WriteBinary(_iter273);
+              oprot.WriteBinary(Attributes[_iter273]);
             }
             oprot.WriteMapEnd();
           }
@@ -16258,12 +16480,12 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Columns = new List<byte[]>();
-                  TList _list262 = iprot.ReadListBegin();
-                  for( int _i263 = 0; _i263 < _list262.Count; ++_i263)
+                  TList _list274 = iprot.ReadListBegin();
+                  for( int _i275 = 0; _i275 < _list274.Count; ++_i275)
                   {
-                    byte[] _elem264 = null;
-                    _elem264 = iprot.ReadBinary();
-                    Columns.Add(_elem264);
+                    byte[] _elem276 = null;
+                    _elem276 = iprot.ReadBinary();
+                    Columns.Add(_elem276);
                   }
                   iprot.ReadListEnd();
                 }
@@ -16282,14 +16504,14 @@ namespace Hbase
               if (field.Type == TType.Map) {
                 {
                   Attributes = new Dictionary<byte[], byte[]>();
-                  TMap _map265 = iprot.ReadMapBegin();
-                  for( int _i266 = 0; _i266 < _map265.Count; ++_i266)
+                  TMap _map277 = iprot.ReadMapBegin();
+                  for( int _i278 = 0; _i278 < _map277.Count; ++_i278)
                   {
-                    byte[] _key267;
-                    byte[] _val268;
-                    _key267 = iprot.ReadBinary();
-                    _val268 = iprot.ReadBinary();
-                    Attributes[_key267] = _val268;
+                    byte[] _key279;
+                    byte[] _val280;
+                    _key279 = iprot.ReadBinary();
+                    _val280 = iprot.ReadBinary();
+                    Attributes[_key279] = _val280;
                   }
                   iprot.ReadMapEnd();
                 }
@@ -16341,9 +16563,9 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-            foreach (byte[] _iter269 in Columns)
+            foreach (byte[] _iter281 in Columns)
             {
-              oprot.WriteBinary(_iter269);
+              oprot.WriteBinary(_iter281);
             }
             oprot.WriteListEnd();
           }
@@ -16364,10 +16586,10 @@ namespace Hbase
           oprot.WriteFieldBegin(field);
           {
             oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
-            foreach (byte[] _iter270 in Attributes.Keys)
+            foreach (byte[] _iter282 in Attributes.Keys)
             {
-              oprot.WriteBinary(_iter270);
-              oprot.WriteBinary(Attributes[_iter270]);
+              oprot.WriteBinary(_iter282);
+              oprot.WriteBinary(Attributes[_iter282]);
             }
             oprot.WriteMapEnd();
           }
@@ -16688,13 +16910,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list271 = iprot.ReadListBegin();
-                  for( int _i272 = 0; _i272 < _list271.Count; ++_i272)
+                  TList _list283 = iprot.ReadListBegin();
+                  for( int _i284 = 0; _i284 < _list283.Count; ++_i284)
                   {
-                    TRowResult _elem273 = new TRowResult();
-                    _elem273 = new TRowResult();
-                    _elem273.Read(iprot);
-                    Success.Add(_elem273);
+                    TRowResult _elem285 = new TRowResult();
+                    _elem285 = new TRowResult();
+                    _elem285.Read(iprot);
+                    Success.Add(_elem285);
                   }
                   iprot.ReadListEnd();
                 }
@@ -16740,9 +16962,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter274 in Success)
+              foreach (TRowResult _iter286 in Success)
               {
-                _iter274.Write(oprot);
+                _iter286.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -16989,13 +17211,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TRowResult>();
-                  TList _list275 = iprot.ReadListBegin();
-                  for( int _i276 = 0; _i276 < _list275.Count; ++_i276)
+                  TList _list287 = iprot.ReadListBegin();
+                  for( int _i288 = 0; _i288 < _list287.Count; ++_i288)
                   {
-                    TRowResult _elem277 = new TRowResult();
-                    _elem277 = new TRowResult();
-                    _elem277.Read(iprot);
-                    Success.Add(_elem277);
+                    TRowResult _elem289 = new TRowResult();
+                    _elem289 = new TRowResult();
+                    _elem289.Read(iprot);
+                    Success.Add(_elem289);
                   }
                   iprot.ReadListEnd();
                 }
@@ -17041,9 +17263,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TRowResult _iter278 in Success)
+              foreach (TRowResult _iter290 in Success)
               {
-                _iter278.Write(oprot);
+                _iter290.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -17525,13 +17747,13 @@ namespace Hbase
               if (field.Type == TType.List) {
                 {
                   Success = new List<TCell>();
-                  TList _list279 = iprot.ReadListBegin();
-                  for( int _i280 = 0; _i280 < _list279.Count; ++_i280)
+                  TList _list291 = iprot.ReadListBegin();
+                  for( int _i292 = 0; _i292 < _list291.Count; ++_i292)
                   {
-                    TCell _elem281 = new TCell();
-                    _elem281 = new TCell();
-                    _elem281.Read(iprot);
-                    Success.Add(_elem281);
+                    TCell _elem293 = new TCell();
+                    _elem293 = new TCell();
+                    _elem293.Read(iprot);
+                    Success.Add(_elem293);
                   }
                   iprot.ReadListEnd();
                 }
@@ -17569,9 +17791,9 @@ namespace Hbase
             oprot.WriteFieldBegin(field);
             {
               oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
-              foreach (TCell _iter282 in Success)
+              foreach (TCell _iter294 in Success)
               {
-                _iter282.Write(oprot);
+                _iter294.Write(oprot);
               }
               oprot.WriteListEnd();
             }
@@ -17812,6 +18034,683 @@ namespace Hbase
         sb.Append(Success== null ? "<null>" : Success.ToString());
         sb.Append(",Io: ");
         sb.Append(Io== null ? "<null>" : Io.ToString());
+        sb.Append(")");
+        return sb.ToString();
+      }
+
+    }
+
+
+    #if !SILVERLIGHT
+    [Serializable]
+    #endif
+    public partial class append_args : TBase
+    {
+      private TAppend _append;
+
+      /// <summary>
+      /// The single append operation to apply
+      /// </summary>
+      public TAppend Append
+      {
+        get
+        {
+          return _append;
+        }
+        set
+        {
+          __isset.append = true;
+          this._append = value;
+        }
+      }
+
+
+      public Isset __isset;
+      #if !SILVERLIGHT
+      [Serializable]
+      #endif
+      public struct Isset {
+        public bool append;
+      }
+
+      public append_args() {
+      }
+
+      public void Read (TProtocol iprot)
+      {
+        TField field;
+        iprot.ReadStructBegin();
+        while (true)
+        {
+          field = iprot.ReadFieldBegin();
+          if (field.Type == TType.Stop) { 
+            break;
+          }
+          switch (field.ID)
+          {
+            case 1:
+              if (field.Type == TType.Struct) {
+                Append = new TAppend();
+                Append.Read(iprot);
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            default: 
+              TProtocolUtil.Skip(iprot, field.Type);
+              break;
+          }
+          iprot.ReadFieldEnd();
+        }
+        iprot.ReadStructEnd();
+      }
+
+      public void Write(TProtocol oprot) {
+        TStruct struc = new TStruct("append_args");
+        oprot.WriteStructBegin(struc);
+        TField field = new TField();
+        if (Append != null && __isset.append) {
+          field.Name = "append";
+          field.Type = TType.Struct;
+          field.ID = 1;
+          oprot.WriteFieldBegin(field);
+          Append.Write(oprot);
+          oprot.WriteFieldEnd();
+        }
+        oprot.WriteFieldStop();
+        oprot.WriteStructEnd();
+      }
+
+      public override string ToString() {
+        StringBuilder sb = new StringBuilder("append_args(");
+        sb.Append("Append: ");
+        sb.Append(Append== null ? "<null>" : Append.ToString());
+        sb.Append(")");
+        return sb.ToString();
+      }
+
+    }
+
+
+    #if !SILVERLIGHT
+    [Serializable]
+    #endif
+    public partial class append_result : TBase
+    {
+      private List<TCell> _success;
+      private IOError _io;
+
+      public List<TCell> Success
+      {
+        get
+        {
+          return _success;
+        }
+        set
+        {
+          __isset.success = true;
+          this._success = value;
+        }
+      }
+
+      public IOError Io
+      {
+        get
+        {
+          return _io;
+        }
+        set
+        {
+          __isset.io = true;
+          this._io = value;
+        }
+      }
+
+
+      public Isset __isset;
+      #if !SILVERLIGHT
+      [Serializable]
+      #endif
+      public struct Isset {
+        public bool success;
+        public bool io;
+      }
+
+      public append_result() {
+      }
+
+      public void Read (TProtocol iprot)
+      {
+        TField field;
+        iprot.ReadStructBegin();
+        while (true)
+        {
+          field = iprot.ReadFieldBegin();
+          if (field.Type == TType.Stop) { 
+            break;
+          }
+          switch (field.ID)
+          {
+            case 0:
+              if (field.Type == TType.List) {
+                {
+                  Success = new List<TCell>();
+                  TList _list295 = iprot.ReadListBegin();
+                  for( int _i296 = 0; _i296 < _list295.Count; ++_i296)
+                  {
+                    TCell _elem297 = new TCell();
+                    _elem297 = new TCell();
+                    _elem297.Read(iprot);
+                    Success.Add(_elem297);
+                  }
+                  iprot.ReadListEnd();
+                }
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 1:
+              if (field.Type == TType.Struct) {
+                Io = new IOError();
+                Io.Read(iprot);
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            default: 
+              TProtocolUtil.Skip(iprot, field.Type);
+              break;
+          }
+          iprot.ReadFieldEnd();
+        }
+        iprot.ReadStructEnd();
+      }
+
+      public void Write(TProtocol oprot) {
+        TStruct struc = new TStruct("append_result");
+        oprot.WriteStructBegin(struc);
+        TField field = new TField();
+
+        if (this.__isset.success) {
+          if (Success != null) {
+            field.Name = "Success";
+            field.Type = TType.List;
+            field.ID = 0;
+            oprot.WriteFieldBegin(field);
+            {
+              oprot.WriteListBegin(new TList(TType.Struct, Success.Count));
+              foreach (TCell _iter298 in Success)
+              {
+                _iter298.Write(oprot);
+              }
+              oprot.WriteListEnd();
+            }
+            oprot.WriteFieldEnd();
+          }
+        } else if (this.__isset.io) {
+          if (Io != null) {
+            field.Name = "Io";
+            field.Type = TType.Struct;
+            field.ID = 1;
+            oprot.WriteFieldBegin(field);
+            Io.Write(oprot);
+            oprot.WriteFieldEnd();
+          }
+        }
+        oprot.WriteFieldStop();
+        oprot.WriteStructEnd();
+      }
+
+      public override string ToString() {
+        StringBuilder sb = new StringBuilder("append_result(");
+        sb.Append("Success: ");
+        sb.Append(Success);
+        sb.Append(",Io: ");
+        sb.Append(Io== null ? "<null>" : Io.ToString());
+        sb.Append(")");
+        return sb.ToString();
+      }
+
+    }
+
+
+    #if !SILVERLIGHT
+    [Serializable]
+    #endif
+    public partial class checkAndPut_args : TBase
+    {
+      private byte[] _tableName;
+      private byte[] _row;
+      private byte[] _column;
+      private byte[] _value;
+      private Mutation _mput;
+      private Dictionary<byte[], byte[]> _attributes;
+
+      /// <summary>
+      /// name of table
+      /// </summary>
+      public byte[] TableName
+      {
+        get
+        {
+          return _tableName;
+        }
+        set
+        {
+          __isset.tableName = true;
+          this._tableName = value;
+        }
+      }
+
+      /// <summary>
+      /// row key
+      /// </summary>
+      public byte[] Row
+      {
+        get
+        {
+          return _row;
+        }
+        set
+        {
+          __isset.row = true;
+          this._row = value;
+        }
+      }
+
+      /// <summary>
+      /// column name
+      /// </summary>
+      public byte[] Column
+      {
+        get
+        {
+          return _column;
+        }
+        set
+        {
+          __isset.column = true;
+          this._column = value;
+        }
+      }
+
+      /// <summary>
+      /// the expected value for the column parameter, if not
+      /// provided the check is for the non-existence of the
+      /// column in question
+      /// </summary>
+      public byte[] Value
+      {
+        get
+        {
+          return _value;
+        }
+        set
+        {
+          __isset.value = true;
+          this._value = value;
+        }
+      }
+
+      /// <summary>
+      /// mutation for the put
+      /// </summary>
+      public Mutation Mput
+      {
+        get
+        {
+          return _mput;
+        }
+        set
+        {
+          __isset.mput = true;
+          this._mput = value;
+        }
+      }
+
+      /// <summary>
+      /// Mutation attributes
+      /// </summary>
+      public Dictionary<byte[], byte[]> Attributes
+      {
+        get
+        {
+          return _attributes;
+        }
+        set
+        {
+          __isset.attributes = true;
+          this._attributes = value;
+        }
+      }
+
+
+      public Isset __isset;
+      #if !SILVERLIGHT
+      [Serializable]
+      #endif
+      public struct Isset {
+        public bool tableName;
+        public bool row;
+        public bool column;
+        public bool value;
+        public bool mput;
+        public bool attributes;
+      }
+
+      public checkAndPut_args() {
+      }
+
+      public void Read (TProtocol iprot)
+      {
+        TField field;
+        iprot.ReadStructBegin();
+        while (true)
+        {
+          field = iprot.ReadFieldBegin();
+          if (field.Type == TType.Stop) { 
+            break;
+          }
+          switch (field.ID)
+          {
+            case 1:
+              if (field.Type == TType.String) {
+                TableName = iprot.ReadBinary();
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 2:
+              if (field.Type == TType.String) {
+                Row = iprot.ReadBinary();
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 3:
+              if (field.Type == TType.String) {
+                Column = iprot.ReadBinary();
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 5:
+              if (field.Type == TType.String) {
+                Value = iprot.ReadBinary();
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 6:
+              if (field.Type == TType.Struct) {
+                Mput = new Mutation();
+                Mput.Read(iprot);
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 7:
+              if (field.Type == TType.Map) {
+                {
+                  Attributes = new Dictionary<byte[], byte[]>();
+                  TMap _map299 = iprot.ReadMapBegin();
+                  for( int _i300 = 0; _i300 < _map299.Count; ++_i300)
+                  {
+                    byte[] _key301;
+                    byte[] _val302;
+                    _key301 = iprot.ReadBinary();
+                    _val302 = iprot.ReadBinary();
+                    Attributes[_key301] = _val302;
+                  }
+                  iprot.ReadMapEnd();
+                }
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            default: 
+              TProtocolUtil.Skip(iprot, field.Type);
+              break;
+          }
+          iprot.ReadFieldEnd();
+        }
+        iprot.ReadStructEnd();
+      }
+
+      public void Write(TProtocol oprot) {
+        TStruct struc = new TStruct("checkAndPut_args");
+        oprot.WriteStructBegin(struc);
+        TField field = new TField();
+        if (TableName != null && __isset.tableName) {
+          field.Name = "tableName";
+          field.Type = TType.String;
+          field.ID = 1;
+          oprot.WriteFieldBegin(field);
+          oprot.WriteBinary(TableName);
+          oprot.WriteFieldEnd();
+        }
+        if (Row != null && __isset.row) {
+          field.Name = "row";
+          field.Type = TType.String;
+          field.ID = 2;
+          oprot.WriteFieldBegin(field);
+          oprot.WriteBinary(Row);
+          oprot.WriteFieldEnd();
+        }
+        if (Column != null && __isset.column) {
+          field.Name = "column";
+          field.Type = TType.String;
+          field.ID = 3;
+          oprot.WriteFieldBegin(field);
+          oprot.WriteBinary(Column);
+          oprot.WriteFieldEnd();
+        }
+        if (Value != null && __isset.value) {
+          field.Name = "value";
+          field.Type = TType.String;
+          field.ID = 5;
+          oprot.WriteFieldBegin(field);
+          oprot.WriteBinary(Value);
+          oprot.WriteFieldEnd();
+        }
+        if (Mput != null && __isset.mput) {
+          field.Name = "mput";
+          field.Type = TType.Struct;
+          field.ID = 6;
+          oprot.WriteFieldBegin(field);
+          Mput.Write(oprot);
+          oprot.WriteFieldEnd();
+        }
+        if (Attributes != null && __isset.attributes) {
+          field.Name = "attributes";
+          field.Type = TType.Map;
+          field.ID = 7;
+          oprot.WriteFieldBegin(field);
+          {
+            oprot.WriteMapBegin(new TMap(TType.String, TType.String, Attributes.Count));
+            foreach (byte[] _iter303 in Attributes.Keys)
+            {
+              oprot.WriteBinary(_iter303);
+              oprot.WriteBinary(Attributes[_iter303]);
+            }
+            oprot.WriteMapEnd();
+          }
+          oprot.WriteFieldEnd();
+        }
+        oprot.WriteFieldStop();
+        oprot.WriteStructEnd();
+      }
+
+      public override string ToString() {
+        StringBuilder sb = new StringBuilder("checkAndPut_args(");
+        sb.Append("TableName: ");
+        sb.Append(TableName);
+        sb.Append(",Row: ");
+        sb.Append(Row);
+        sb.Append(",Column: ");
+        sb.Append(Column);
+        sb.Append(",Value: ");
+        sb.Append(Value);
+        sb.Append(",Mput: ");
+        sb.Append(Mput== null ? "<null>" : Mput.ToString());
+        sb.Append(",Attributes: ");
+        sb.Append(Attributes);
+        sb.Append(")");
+        return sb.ToString();
+      }
+
+    }
+
+
+    #if !SILVERLIGHT
+    [Serializable]
+    #endif
+    public partial class checkAndPut_result : TBase
+    {
+      private bool _success;
+      private IOError _io;
+      private IllegalArgument _ia;
+
+      public bool Success
+      {
+        get
+        {
+          return _success;
+        }
+        set
+        {
+          __isset.success = true;
+          this._success = value;
+        }
+      }
+
+      public IOError Io
+      {
+        get
+        {
+          return _io;
+        }
+        set
+        {
+          __isset.io = true;
+          this._io = value;
+        }
+      }
+
+      public IllegalArgument Ia
+      {
+        get
+        {
+          return _ia;
+        }
+        set
+        {
+          __isset.ia = true;
+          this._ia = value;
+        }
+      }
+
+
+      public Isset __isset;
+      #if !SILVERLIGHT
+      [Serializable]
+      #endif
+      public struct Isset {
+        public bool success;
+        public bool io;
+        public bool ia;
+      }
+
+      public checkAndPut_result() {
+      }
+
+      public void Read (TProtocol iprot)
+      {
+        TField field;
+        iprot.ReadStructBegin();
+        while (true)
+        {
+          field = iprot.ReadFieldBegin();
+          if (field.Type == TType.Stop) { 
+            break;
+          }
+          switch (field.ID)
+          {
+            case 0:
+              if (field.Type == TType.Bool) {
+                Success = iprot.ReadBool();
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 1:
+              if (field.Type == TType.Struct) {
+                Io = new IOError();
+                Io.Read(iprot);
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            case 2:
+              if (field.Type == TType.Struct) {
+                Ia = new IllegalArgument();
+                Ia.Read(iprot);
+              } else { 
+                TProtocolUtil.Skip(iprot, field.Type);
+              }
+              break;
+            default: 
+              TProtocolUtil.Skip(iprot, field.Type);
+              break;
+          }
+          iprot.ReadFieldEnd();
+        }
+        iprot.ReadStructEnd();
+      }
+
+      public void Write(TProtocol oprot) {
+        TStruct struc = new TStruct("checkAndPut_result");
+        oprot.WriteStructBegin(struc);
+        TField field = new TField();
+
+        if (this.__isset.success) {
+          field.Name = "Success";
+          field.Type = TType.Bool;
+          field.ID = 0;
+          oprot.WriteFieldBegin(field);
+          oprot.WriteBool(Success);
+          oprot.WriteFieldEnd();
+        } else if (this.__isset.io) {
+          if (Io != null) {
+            field.Name = "Io";
+            field.Type = TType.Struct;
+            field.ID = 1;
+            oprot.WriteFieldBegin(field);
+            Io.Write(oprot);
+            oprot.WriteFieldEnd();
+          }
+        } else if (this.__isset.ia) {
+          if (Ia != null) {
+            field.Name = "Ia";
+            field.Type = TType.Struct;
+            field.ID = 2;
+            oprot.WriteFieldBegin(field);
+            Ia.Write(oprot);
+            oprot.WriteFieldEnd();
+          }
+        }
+        oprot.WriteFieldStop();
+        oprot.WriteStructEnd();
+      }
+
+      public override string ToString() {
+        StringBuilder sb = new StringBuilder("checkAndPut_result(");
+        sb.Append("Success: ");
+        sb.Append(Success);
+        sb.Append(",Io: ");
+        sb.Append(Io== null ? "<null>" : Io.ToString());
+        sb.Append(",Ia: ");
+        sb.Append(Ia== null ? "<null>" : Ia.ToString());
         sb.Append(")");
         return sb.ToString();
       }

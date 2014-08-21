@@ -69,7 +69,9 @@
     <Compile Include="gen-csharp\Hbase\IllegalArgument.cs" />
     <Compile Include="gen-csharp\Hbase\IOError.cs" />
     <Compile Include="gen-csharp\Hbase\Mutation.cs" />
+    <Compile Include="gen-csharp\Hbase\TAppend.cs" />
     <Compile Include="gen-csharp\Hbase\TCell.cs" />
+    <Compile Include="gen-csharp\Hbase\TColumn.cs" />
     <Compile Include="gen-csharp\Hbase\TIncrement.cs" />
     <Compile Include="gen-csharp\Hbase\TRegionInfo.cs" />
     <Compile Include="gen-csharp\Hbase\TRowResult.cs" />

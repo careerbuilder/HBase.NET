@@ -19,16 +19,30 @@ namespace Hbase
 {
 
   /// <summary>
-  /// Holds row name and then a map of columns to cells.
+  /// An Append object is used to specify the parameters for performing the append operation.
   /// </summary>
   #if !SILVERLIGHT
   [Serializable]
   #endif
-  public partial class TRowResult : TBase
+  public partial class TAppend : TBase
   {
+    private byte[] _table;
     private byte[] _row;
-    private Dictionary<byte[], TCell> _columns;
-    private List<TColumn> _sortedColumns;
+    private List<byte[]> _columns;
+    private List<byte[]> _values;
+
+    public byte[] Table
+    {
+      get
+      {
+        return _table;
+      }
+      set
+      {
+        __isset.table = true;
+        this._table = value;
+      }
+    }
 
     public byte[] Row
     {
@@ -43,7 +57,7 @@ namespace Hbase
       }
     }
 
-    public Dictionary<byte[], TCell> Columns
+    public List<byte[]> Columns
     {
       get
       {
@@ -56,16 +70,16 @@ namespace Hbase
       }
     }
 
-    public List<TColumn> SortedColumns
+    public List<byte[]> Values
     {
       get
       {
-        return _sortedColumns;
+        return _values;
       }
       set
       {
-        __isset.sortedColumns = true;
-        this._sortedColumns = value;
+        __isset.values = true;
+        this._values = value;
       }
     }
 
@@ -75,12 +89,13 @@ namespace Hbase
     [Serializable]
     #endif
     public struct Isset {
+      public bool table;
       public bool row;
       public bool columns;
-      public bool sortedColumns;
+      public bool values;
     }
 
-    public TRowResult() {
+    public TAppend() {
     }
 
     public void Read (TProtocol iprot)
@@ -97,27 +112,14 @@ namespace Hbase
         {
           case 1:
             if (field.Type == TType.String) {
-              Row = iprot.ReadBinary();
+              Table = iprot.ReadBinary();
             } else { 
               TProtocolUtil.Skip(iprot, field.Type);
             }
             break;
           case 2:
-            if (field.Type == TType.Map) {
-              {
-                Columns = new Dictionary<byte[], TCell>();
-                TMap _map4 = iprot.ReadMapBegin();
-                for( int _i5 = 0; _i5 < _map4.Count; ++_i5)
-                {
-                  byte[] _key6;
-                  TCell _val7;
-                  _key6 = iprot.ReadBinary();
-                  _val7 = new TCell();
-                  _val7.Read(iprot);
-                  Columns[_key6] = _val7;
-                }
-                iprot.ReadMapEnd();
-              }
+            if (field.Type == TType.String) {
+              Row = iprot.ReadBinary();
             } else { 
               TProtocolUtil.Skip(iprot, field.Type);
             }
@@ -125,14 +127,30 @@ namespace Hbase
           case 3:
             if (field.Type == TType.List) {
               {
-                SortedColumns = new List<TColumn>();
-                TList _list8 = iprot.ReadListBegin();
-                for( int _i9 = 0; _i9 < _list8.Count; ++_i9)
+                Columns = new List<byte[]>();
+                TList _list17 = iprot.ReadListBegin();
+                for( int _i18 = 0; _i18 < _list17.Count; ++_i18)
                 {
-                  TColumn _elem10 = new TColumn();
-                  _elem10 = new TColumn();
-                  _elem10.Read(iprot);
-                  SortedColumns.Add(_elem10);
+                  byte[] _elem19 = null;
+                  _elem19 = iprot.ReadBinary();
+                  Columns.Add(_elem19);
+                }
+                iprot.ReadListEnd();
+              }
+            } else { 
+              TProtocolUtil.Skip(iprot, field.Type);
+            }
+            break;
+          case 4:
+            if (field.Type == TType.List) {
+              {
+                Values = new List<byte[]>();
+                TList _list20 = iprot.ReadListBegin();
+                for( int _i21 = 0; _i21 < _list20.Count; ++_i21)
+                {
+                  byte[] _elem22 = null;
+                  _elem22 = iprot.ReadBinary();
+                  Values.Add(_elem22);
                 }
                 iprot.ReadListEnd();
               }
@@ -150,43 +168,50 @@ namespace Hbase
     }
 
     public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("TRowResult");
+      TStruct struc = new TStruct("TAppend");
       oprot.WriteStructBegin(struc);
       TField field = new TField();
+      if (Table != null && __isset.table) {
+        field.Name = "table";
+        field.Type = TType.String;
+        field.ID = 1;
+        oprot.WriteFieldBegin(field);
+        oprot.WriteBinary(Table);
+        oprot.WriteFieldEnd();
+      }
       if (Row != null && __isset.row) {
         field.Name = "row";
         field.Type = TType.String;
-        field.ID = 1;
+        field.ID = 2;
         oprot.WriteFieldBegin(field);
         oprot.WriteBinary(Row);
         oprot.WriteFieldEnd();
       }
       if (Columns != null && __isset.columns) {
         field.Name = "columns";
-        field.Type = TType.Map;
-        field.ID = 2;
-        oprot.WriteFieldBegin(field);
-        {
-          oprot.WriteMapBegin(new TMap(TType.String, TType.Struct, Columns.Count));
-          foreach (byte[] _iter11 in Columns.Keys)
-          {
-            oprot.WriteBinary(_iter11);
-            Columns[_iter11].Write(oprot);
-          }
-          oprot.WriteMapEnd();
-        }
-        oprot.WriteFieldEnd();
-      }
-      if (SortedColumns != null && __isset.sortedColumns) {
-        field.Name = "sortedColumns";
         field.Type = TType.List;
         field.ID = 3;
         oprot.WriteFieldBegin(field);
         {
-          oprot.WriteListBegin(new TList(TType.Struct, SortedColumns.Count));
-          foreach (TColumn _iter12 in SortedColumns)
+          oprot.WriteListBegin(new TList(TType.String, Columns.Count));
+          foreach (byte[] _iter23 in Columns)
           {
-            _iter12.Write(oprot);
+            oprot.WriteBinary(_iter23);
+          }
+          oprot.WriteListEnd();
+        }
+        oprot.WriteFieldEnd();
+      }
+      if (Values != null && __isset.values) {
+        field.Name = "values";
+        field.Type = TType.List;
+        field.ID = 4;
+        oprot.WriteFieldBegin(field);
+        {
+          oprot.WriteListBegin(new TList(TType.String, Values.Count));
+          foreach (byte[] _iter24 in Values)
+          {
+            oprot.WriteBinary(_iter24);
           }
           oprot.WriteListEnd();
         }
@@ -197,13 +222,15 @@ namespace Hbase
     }
 
     public override string ToString() {
-      StringBuilder sb = new StringBuilder("TRowResult(");
-      sb.Append("Row: ");
+      StringBuilder sb = new StringBuilder("TAppend(");
+      sb.Append("Table: ");
+      sb.Append(Table);
+      sb.Append(",Row: ");
       sb.Append(Row);
       sb.Append(",Columns: ");
       sb.Append(Columns);
-      sb.Append(",SortedColumns: ");
-      sb.Append(SortedColumns);
+      sb.Append(",Values: ");
+      sb.Append(Values);
       sb.Append(")");
       return sb.ToString();
     }

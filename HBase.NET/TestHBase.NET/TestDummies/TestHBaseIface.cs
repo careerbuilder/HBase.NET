@@ -316,5 +316,15 @@ namespace TestHBase.NET.TestDummies
         {
             return Execute<Hbase.TRegionInfo>();
         }
+
+        public List<TCell> append(TAppend append)
+        {
+            return Execute<List<TCell>>();
+        }
+
+        public bool checkAndPut(byte[] tableName, byte[] row, byte[] column, byte[] value, Mutation mput, Dictionary<byte[], byte[]> attributes)
+        {
+            return Execute<bool>();
+        }
     }
 }

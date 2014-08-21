@@ -123,11 +123,20 @@ struct TIncrement {
 }
 
 /**
+ * Holds column name and the cell.
+ */
+struct TColumn {
+  1:Text columnName,
+  2:TCell cell
+ }
+
+/**
  * Holds row name and then a map of columns to cells. 
  */
 struct TRowResult {
   1:Text row,
-  2:map<Text, TCell> columns
+  2:optional map<Text, TCell> columns,
+  3:optional list<TColumn> sortedColumns
 }
 
 /**
@@ -140,7 +149,18 @@ struct TScan {
   4:optional list<Text> columns,
   5:optional i32 caching,
   6:optional Text filterString,
-  7:optional i32 batchSize
+  7:optional i32 batchSize,
+  8:optional bool sortColumns
+}
+
+/**
+ * An Append object is used to specify the parameters for performing the append operation.
+ */
+struct TAppend {
+  1:Text table,
+  2:Text row,
+  3:list<Text> columns,
+  4:list<Text> values
 }
 
 //
@@ -913,4 +933,43 @@ service Hbase {
     1:Text row,
 
   ) throws (1:IOError io)
+
+  /**
+   * Appends values to one or more columns within a single row.
+   *
+   * @return values of columns after the append operation.
+   */
+  list<TCell> append(
+    /** The single append operation to apply */
+    1:TAppend append,
+
+  ) throws (1:IOError io)
+
+  /**
+   * Atomically checks if a row/family/qualifier value matches the expected
+   * value. If it does, it adds the corresponding mutation operation for put.
+   *
+   * @return true if the new put was executed, false otherwise
+   */
+  bool checkAndPut(
+    /** name of table */
+    1:Text tableName,
+
+    /** row key */
+    2:Text row,
+
+    /** column name */
+    3:Text column,
+
+    /** the expected value for the column parameter, if not
+        provided the check is for the non-existence of the
+        column in question */
+    5:Text value
+
+    /** mutation for the put */
+    6:Mutation mput,
+
+    /** Mutation attributes */
+    7:map<Text, Text> attributes
+  ) throws (1:IOError io, 2:IllegalArgument ia)
 }

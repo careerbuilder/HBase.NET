@@ -33,6 +33,7 @@ namespace Hbase
     private int _caching;
     private byte[] _filterString;
     private int _batchSize;
+    private bool _sortColumns;
 
     public byte[] StartRow
     {
@@ -125,6 +126,19 @@ namespace Hbase
       }
     }
 
+    public bool SortColumns
+    {
+      get
+      {
+        return _sortColumns;
+      }
+      set
+      {
+        __isset.sortColumns = true;
+        this._sortColumns = value;
+      }
+    }
+
 
     public Isset __isset;
     #if !SILVERLIGHT
@@ -138,6 +152,7 @@ namespace Hbase
       public bool caching;
       public bool filterString;
       public bool batchSize;
+      public bool sortColumns;
     }
 
     public TScan() {
@@ -180,12 +195,12 @@ namespace Hbase
             if (field.Type == TType.List) {
               {
                 Columns = new List<byte[]>();
-                TList _list9 = iprot.ReadListBegin();
-                for( int _i10 = 0; _i10 < _list9.Count; ++_i10)
+                TList _list13 = iprot.ReadListBegin();
+                for( int _i14 = 0; _i14 < _list13.Count; ++_i14)
                 {
-                  byte[] _elem11 = null;
-                  _elem11 = iprot.ReadBinary();
-                  Columns.Add(_elem11);
+                  byte[] _elem15 = null;
+                  _elem15 = iprot.ReadBinary();
+                  Columns.Add(_elem15);
                 }
                 iprot.ReadListEnd();
               }
@@ -210,6 +225,13 @@ namespace Hbase
           case 7:
             if (field.Type == TType.I32) {
               BatchSize = iprot.ReadI32();
+            } else { 
+              TProtocolUtil.Skip(iprot, field.Type);
+            }
+            break;
+          case 8:
+            if (field.Type == TType.Bool) {
+              SortColumns = iprot.ReadBool();
             } else { 
               TProtocolUtil.Skip(iprot, field.Type);
             }
@@ -258,9 +280,9 @@ namespace Hbase
         oprot.WriteFieldBegin(field);
         {
           oprot.WriteListBegin(new TList(TType.String, Columns.Count));
-          foreach (byte[] _iter12 in Columns)
+          foreach (byte[] _iter16 in Columns)
           {
-            oprot.WriteBinary(_iter12);
+            oprot.WriteBinary(_iter16);
           }
           oprot.WriteListEnd();
         }
@@ -290,6 +312,14 @@ namespace Hbase
         oprot.WriteI32(BatchSize);
         oprot.WriteFieldEnd();
       }
+      if (__isset.sortColumns) {
+        field.Name = "sortColumns";
+        field.Type = TType.Bool;
+        field.ID = 8;
+        oprot.WriteFieldBegin(field);
+        oprot.WriteBool(SortColumns);
+        oprot.WriteFieldEnd();
+      }
       oprot.WriteFieldStop();
       oprot.WriteStructEnd();
     }
@@ -310,6 +340,8 @@ namespace Hbase
       sb.Append(FilterString);
       sb.Append(",BatchSize: ");
       sb.Append(BatchSize);
+      sb.Append(",SortColumns: ");
+      sb.Append(SortColumns);
       sb.Append(")");
       return sb.ToString();
     }

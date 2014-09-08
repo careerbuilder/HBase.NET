@@ -28,6 +28,7 @@ namespace Hbase
         : IClient
     {
         private readonly IHBaseClientPool _ClientPool;
+        private const string DEFAULTCANARYTABLE = "hbase:meta";
         private const int DEFAULTNUMCONNECTIONS = 10;
         private const int DEFAULTNUMSCANROWS = 1000; //Load data in chunks of 1000 results
         private const int DEFAULTTIMEOUT = 20000;
@@ -38,25 +39,13 @@ namespace Hbase
             _ClientPool = ClientPool;
         }
 
-        public Client(string Host, int Port, int BufferSize)
-            : this(Host, Port, BufferSize, DEFAULTNUMCONNECTIONS, DEFAULTTIMEOUT) { }
+        public Client(string Host, int Port, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int Timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE)
+            : this(new HBaseHost[] { new HBaseHost(Host, Port) }, BufferSize, NumConnections, Timeout, CanaryTable) { }
 
-        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize)
-            : this(Hosts, BufferSize, DEFAULTNUMCONNECTIONS, DEFAULTTIMEOUT) { }
-
-        public Client(string Host, int Port, int BufferSize, int NumConnections)
-            : this(Host, Port, BufferSize, NumConnections, DEFAULTTIMEOUT) { }
-
-        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections)
-            : this(Hosts, BufferSize, NumConnections, DEFAULTTIMEOUT) { }
-
-        public Client(string Host, int Port, int BufferSize, int NumConnections, int timeout)
-            : this(new HBaseHost[] { new HBaseHost(Host, Port) }, BufferSize, NumConnections, timeout) { }
-
-        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections, int timeout)
+        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE)
         {
             Logger.Log.Info("Initializing HBase client.");
-            _ClientPool = new HBaseClientPool(Hosts, BufferSize, NumConnections, timeout);
+            _ClientPool = new HBaseClientPool(Hosts, BufferSize, NumConnections, timeout, CanaryTable);
         }
 
         #endregion

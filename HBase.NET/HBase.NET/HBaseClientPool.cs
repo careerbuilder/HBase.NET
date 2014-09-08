@@ -42,6 +42,7 @@ namespace Hbase
         private readonly int _Timeout;
         private IIterator<HBaseHost> _Hosts;
         private readonly int _BufferSize;
+        private string _CanaryTable = string.Empty;
         private ConcurrentQueue<ClientSynchronizationEvent> _ClientSynchronization = new ConcurrentQueue<ClientSynchronizationEvent>();
         protected Timer _FaultyClientsTimer;
 
@@ -66,22 +67,13 @@ namespace Hbase
             this._OriginalClients = _AvailableConnections.Count;
         }
 
-        public HBaseClientPool(string Host, int Port, int BufferSize, int NumConnections)
-            : this(Host, Port, BufferSize, NumConnections, DEFAULTTIMEOUT) { }
-
-        public HBaseClientPool(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections)
-            : this(Hosts, BufferSize, NumConnections, DEFAULTTIMEOUT) { }
-
-        public HBaseClientPool(string Host, int Port, int BufferSize, int NumConnections, int Timeout)
-            : this(new List<HBaseHost> { new HBaseHost(Host, Port) }, BufferSize, NumConnections, Timeout)
-        { }
-
-        public HBaseClientPool(IEnumerable<HBaseHost> hosts, int BufferSize, int NumConnections, int Timeout)
+        public HBaseClientPool(IEnumerable<HBaseHost> hosts, int BufferSize, int NumConnections, int Timeout, string CanaryTable)
             : this()
         {
             _Timeout = Timeout;
             _Hosts = new RoundRobinIterator<HBaseHost>(hosts);
             _BufferSize = BufferSize;
+            _CanaryTable = CanaryTable;
 
             for (int i = 0; i < NumConnections; ++i)
             {
@@ -521,7 +513,7 @@ namespace Hbase
                                 client.Timeout = _Timeout;
                             }
 
-                            client.Execute(c => c.isTableEnabled(ClientEncoder.EncodeString("-ROOT-")));
+                            client.Execute(c => c.isTableEnabled(ClientEncoder.EncodeString(_CanaryTable)));
                             client.Dispose();
                             client = null;
 

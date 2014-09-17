@@ -52,21 +52,26 @@ namespace Hbase
         private string _Host;
         private int _Port;
         private int _BufferSize;
+        private bool _UseCompactProtocol;
+        private bool _UseFramedTransport;
         private Hbase.Iface _Client;
-        private TBufferedTransport _Transport;
+        private TProtocol _Protocol;
+        private TTransport _Transport;
         private TSocket _Socket;
 
-        internal HBaseConnection(Hbase.Iface Client, TBufferedTransport Transport)
+        internal HBaseConnection(Hbase.Iface Client, TTransport Transport)
         {
             this._Client = Client;
             this._Transport = Transport;
         }
 
-        public HBaseConnection(string Host, int Port, int BufferSize)
+        public HBaseConnection(string Host, int Port, int BufferSize, bool UseCompactProtocol, bool UseFramedTransport)
         {
             this._Host = Host;
             this._Port = Port;
             this._BufferSize = BufferSize;
+            this._UseCompactProtocol = UseCompactProtocol;
+            this._UseFramedTransport = UseFramedTransport;
         }
 
         public Hbase.Iface GetClient(int Timeout)
@@ -75,7 +80,22 @@ namespace Hbase
             {
                 this._Socket = new TSocket(this.Host, this.Port) { Timeout = Timeout };
                 this._Transport = new TBufferedTransport( this._Socket, this.BufferSize);
-                this._Client = new Hbase.Client(new TBinaryProtocol(this._Transport));
+
+                if (_UseFramedTransport)
+                {
+                    this._Transport = new TFramedTransport(this._Transport);
+                }
+
+                if(_UseCompactProtocol)
+                {
+                    this._Protocol = new TCompactProtocol(this._Transport);
+                }
+                else
+                {
+                    this._Protocol = new TBinaryProtocol(this._Transport);
+                }
+
+                this._Client = new Hbase.Client(this._Protocol);
                 this._Transport.Open();
             }
 

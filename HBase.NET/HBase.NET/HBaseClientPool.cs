@@ -67,7 +67,7 @@ namespace Hbase
             this._OriginalClients = _AvailableConnections.Count;
         }
 
-        public HBaseClientPool(IEnumerable<HBaseHost> hosts, int BufferSize, int NumConnections, int Timeout, string CanaryTable)
+        public HBaseClientPool(IEnumerable<HBaseHost> hosts, int BufferSize, int NumConnections, int Timeout, string CanaryTable, bool UseCompactProtocol, bool UseFramedTransport)
             : this()
         {
             _Timeout = Timeout;
@@ -78,7 +78,7 @@ namespace Hbase
             for (int i = 0; i < NumConnections; ++i)
             {
                 var nextHost = this._Hosts.Next();
-                _AvailableConnections.Enqueue(new HBaseConnection(nextHost.Host, nextHost.Port, _BufferSize));
+                _AvailableConnections.Enqueue(new HBaseConnection(nextHost.Host, nextHost.Port, _BufferSize, UseCompactProtocol, UseFramedTransport));
             }
             this._OriginalClients = _AvailableConnections.Count;
         }

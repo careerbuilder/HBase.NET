@@ -32,6 +32,8 @@ namespace Hbase
         private const int DEFAULTNUMCONNECTIONS = 10;
         private const int DEFAULTNUMSCANROWS = 1000; //Load data in chunks of 1000 results
         private const int DEFAULTTIMEOUT = 20000;
+        private const bool DEFAULTUSECOMPACTPROTOCOL = false;
+        private const bool DEFAULTUSEFRAMEDTRANSPORT = false;
 
         #region Constructors
         internal Client(IHBaseClientPool ClientPool)
@@ -39,13 +41,15 @@ namespace Hbase
             _ClientPool = ClientPool;
         }
 
-        public Client(string Host, int Port, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int Timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE)
-            : this(new HBaseHost[] { new HBaseHost(Host, Port) }, BufferSize, NumConnections, Timeout, CanaryTable) { }
+        public Client(string Host, int Port, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int Timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE,
+            bool UseCompactProtocol = DEFAULTUSECOMPACTPROTOCOL, bool UseFramedTransport = DEFAULTUSEFRAMEDTRANSPORT)
+            : this(new HBaseHost[] { new HBaseHost(Host, Port) }, BufferSize, NumConnections, Timeout, CanaryTable, UseCompactProtocol, UseFramedTransport) { }
 
-        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE)
+        public Client(IEnumerable<HBaseHost> Hosts, int BufferSize, int NumConnections = DEFAULTNUMCONNECTIONS, int timeout = DEFAULTTIMEOUT, string CanaryTable = DEFAULTCANARYTABLE,
+            bool UseCompactProtocol = DEFAULTUSECOMPACTPROTOCOL, bool UseFramedTransport = DEFAULTUSEFRAMEDTRANSPORT)
         {
             Logger.Log.Info("Initializing HBase client.");
-            _ClientPool = new HBaseClientPool(Hosts, BufferSize, NumConnections, timeout, CanaryTable);
+            _ClientPool = new HBaseClientPool(Hosts, BufferSize, NumConnections, timeout, CanaryTable, UseCompactProtocol, UseFramedTransport);
         }
 
         #endregion

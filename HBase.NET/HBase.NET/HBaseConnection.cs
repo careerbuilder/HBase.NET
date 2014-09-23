@@ -79,11 +79,14 @@ namespace Hbase
             if (this._Client == null)
             {
                 this._Socket = new TSocket(this.Host, this.Port) { Timeout = Timeout };
-                this._Transport = new TBufferedTransport( this._Socket, this.BufferSize);
 
                 if (_UseFramedTransport)
                 {
-                    this._Transport = new TFramedTransport(this._Transport);
+                    this._Transport = new TFramedTransport(this._Socket);
+                }
+                else
+                {
+                    this._Transport = new TBufferedTransport(this._Socket, this.BufferSize);
                 }
 
                 if(_UseCompactProtocol)
@@ -109,7 +112,7 @@ namespace Hbase
 
         public void Reset()
         {
-            if ((object)_Transport != null && _Transport.IsOpen)
+            if ((object)_Transport != null && IsOpen())
             {
                 _Transport.Close();
             }
@@ -120,7 +123,12 @@ namespace Hbase
 
         public bool IsAlive()
         {
-            return this._Client != null && this._Transport.IsOpen;
+            return (object)_Client != null && IsOpen();
+        }
+
+        private bool IsOpen()
+        {
+            return (object)_Socket != null && (object)_Socket.TcpClient != null && (object)_Socket.TcpClient.Client != null && (object)_Transport != null && _Transport.IsOpen;
         }
 
         #region IDisposable Support

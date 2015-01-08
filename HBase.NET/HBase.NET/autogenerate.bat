@@ -12,4 +12,4 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-thrift-0.9.1.exe -o . --gen csharp Hbase.thrift
+thrift-0.9.2.exe -o . --gen csharp Hbase.thrift

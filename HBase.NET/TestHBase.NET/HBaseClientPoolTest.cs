@@ -897,7 +897,7 @@ namespace TestHBase.NET
 
         private static IEnumerable<IHBaseConnection> GetMockClientTransportUnions(int unions = 10)
         {
-            TBufferedTransport MockTransport = MockRepository.GenerateStub<TBufferedTransport>(MockRepository.GenerateStub<TStreamTransport>());
+            TBufferedTransport MockTransport = MockRepository.GenerateStub<TBufferedTransport>(MockRepository.GenerateStub<TStreamTransport>(), 1024);
             MockTransport.Stub(s => s.IsOpen).Return(true);
 
             IList<IHBaseConnection> Clients = new List<IHBaseConnection>();

@@ -76,7 +76,7 @@ struct ColumnDescriptor {
   6:i32 bloomFilterVectorSize = 0,
   7:i32 bloomFilterNbHashes = 0,
   8:bool blockCacheEnabled = 0,
-  9:i32 timeToLive = 0x7fffffff
+  9:i32 timeToLive = -1
 }
 
 /**
@@ -150,7 +150,8 @@ struct TScan {
   5:optional i32 caching,
   6:optional Text filterString,
   7:optional i32 batchSize,
-  8:optional bool sortColumns
+  8:optional bool sortColumns,
+  9:optional bool reversed 
 }
 
 /**

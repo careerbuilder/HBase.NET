@@ -20,9 +20,9 @@ limitations under the License.
 
 #### Contributors
 
-Thomas Rega
-Mauricio Morales
-Geoffrey Jacoby
+Thomas Rega  
+Mauricio Morales  
+Geoffrey Jacoby  
 
 See Acknowledgements for additional contributions.
 

@@ -28,7 +28,7 @@ See Acknowledgements for additional contributions.
 
 #### Acknowledgements
 
-This project uses apache thrift's thrift-0.9.2.exe in unison with hbase.thrift to autogenerate the low-level hbase thrift client. (see: <http://archive.apache.org/dist/thrift/0.9.2/>; <http://svn.apache.org/viewvc/hbase/trunk/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift/>)
+This project uses apache thrift's thrift-0.11.0.exe in unison with hbase.thrift to autogenerate the low-level hbase thrift client. (see: <http://archive.apache.org/dist/thrift/0.11.0/>; <http://svn.apache.org/viewvc/hbase/trunk/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift/>)
 
 This project uses apache thrift's thrift.dll to communicate with HBase. (see: <http://wiki.apache.org/thrift/ThriftUsageCSharp>)
 

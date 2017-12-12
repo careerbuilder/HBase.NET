@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HBase.NET Test")]
-[assembly: AssemblyCopyright("Copyright © 2012 CareerBuilder, LLC")]
+[assembly: AssemblyCopyright("Copyright © 2017 CareerBuilder, LLC")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -46,5 +46,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.1.1")]
-[assembly: AssemblyFileVersion("1.0.1.1")]
+[assembly: AssemblyVersion("1.0.3.0")]
+[assembly: AssemblyFileVersion("1.0.3.0")]

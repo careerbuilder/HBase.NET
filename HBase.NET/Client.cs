@@ -746,6 +746,7 @@ namespace Hbase
 
             int ScannerID = -1;
             TScan ScanObj = new TScan();
+            ScanObj.Caching = 1000;
             ScanObj.Columns = Columns;
 
             if ((object)KeyStart != null)
